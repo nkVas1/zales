@@ -21,6 +21,9 @@ this project uses [Semantic Versioning](https://semver.org/).
 - CI (`build.yml`): wrapper validation, detekt, Android Lint, tests, debug and
   release builds, APK artifact upload. Dependabot for Gradle and Actions.
 - Backups and device transfer disabled at the manifest level.
+- First run on the real target device (Galaxy A12, Android 13) over wireless
+  debugging; `SETUP.md` documents that path and how to tell a charge-only cable
+  from a missing driver.
 
 ### Changed
 
