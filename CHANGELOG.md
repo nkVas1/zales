@@ -9,6 +9,10 @@ this project uses [Semantic Versioning](https://semver.org/).
 ### Added
 - Project charter, architecture, art direction and phased roadmap (`docs/`).
 - Architecture Decision Records 0001–0006.
-- GPL-3.0-or-later licensing.
+- MPL-2.0 licensing (ADR-0005), chosen to keep commercialization, iOS and a
+  future GPL-licensed sing-box build all possible.
+
+### Changed
+- Licence switched from GPL-3.0-or-later to MPL-2.0 before any code was written.
 
 [Unreleased]: https://github.com/nkVas1/zales/commits/main

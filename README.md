@@ -7,7 +7,7 @@
 Свой ключ VLESS или Outline — и защищённый выход в сеть на вашем Android.
 Ничего лишнего: ни аккаунтов, ни подписок, ни сбора данных.
 
-[![License](https://img.shields.io/badge/license-GPL--3.0--or--later-2b2b2b?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-MPL--2.0-2b2b2b?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-2b2b2b?style=flat-square)](#)
 [![Core](https://img.shields.io/badge/core-Xray--core-2b2b2b?style=flat-square)](https://github.com/XTLS/Xray-core)
 [![Status](https://img.shields.io/badge/status-Phase%200%20·%20проектирование-c77a32?style=flat-square)](docs/ROADMAP.md)
@@ -76,5 +76,9 @@ Zales создавался с одним конкретным пользоват
 
 ## Лицензия
 
-[GPL-3.0-or-later](LICENSE). Зависимости остаются под своими лицензиями:
-Xray-core — MPL-2.0, libXray — MIT, hev-socks5-tunnel — MIT.
+[Mozilla Public License 2.0](LICENSE) — та же лицензия, что у Xray-core. Копилефт
+действует на уровне файлов: изменения в файлах Zales нужно публиковать, надстройки в
+собственных файлах — нет. Обоснование в [ADR-0005](docs/adr/0005-license-mpl2.md).
+
+Зависимости под своими лицензиями: Xray-core — MPL-2.0, libXray — MIT,
+hev-socks5-tunnel — MIT, шрифты Golos Text, JetBrains Mono и Caveat — SIL OFL 1.1.
