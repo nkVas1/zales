@@ -1,0 +1,48 @@
+[versions]
+# ── Toolchain ──────────────────────────────────────────────────────
+agp = "9.4.0"
+kotlin = "2.4.20"
+detekt = "1.23.8"
+
+# ── SDK levels ─────────────────────────────────────────────────────
+# minSdk 26 (Android 8.0) — VpnService is stable there and Samsung
+# devices below it are effectively gone. See docs/ARCHITECTURE.md §8.
+compileSdk = "37"
+minSdk = "26"
+targetSdk = "37"
+
+# ── AndroidX ───────────────────────────────────────────────────────
+androidxCore = "1.19.0"
+androidxActivity = "1.13.0"
+androidxLifecycle = "2.11.0"
+composeBom = "2026.09.00"
+
+[libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-foundation = { module = "androidx.compose.foundation:foundation" }
+
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+
+# Referenced by build-logic so convention plugins can apply them by type.
+plugin-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+plugin-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-compose-compiler-gradle = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+
+# Convention plugins live in build-logic/ and are applied by id, not by alias:
+# a catalog plugin entry requires a version, and these have none.

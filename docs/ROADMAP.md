@@ -35,13 +35,18 @@
 1. ▣ Решения и ADR 0001–0006
 2. ▣ Проектная документация: архитектура, дизайн, голос, связность, диагностика, безопасность
 3. ▣ Репозиторий на GitHub, публичный, MPL-2.0
-4. ▢ Инструменты на Windows: **JDK 21 (Temurin)**, **Android SDK (cmdline-tools)**, **NDK r27+**, **Go 1.24+**, **gomobile**, **Python 3.12**. Android Studio по желанию — сборка идёт из командной строки
-5. ▢ Gradle-скелет: `libs.versions.toml`, convention-плагины в `build-logic`, модули-заглушки, AGP 9 + Kotlin 2.3 + Compose BOM
-6. ▢ GitHub Actions `build.yml`: сборка, линт, тесты, кэш Gradle
-7. ▢ `SETUP.md` и `INSTALL.md` доведены до состояния «по шагам, без домысливания»
+4. ▣ Инструменты: JDK 21 (Temurin 21.0.12), Android SDK (cmdline-tools 23.0, platform 37.0 и 37.2, build-tools 37.0.0, platform-tools 37.0.1), Gradle 9.7.1. Go, gomobile и NDK — по мере надобности в фазе 1
+5. ▣ Gradle-скелет: version catalog, convention-плагины в `build-logic`, модули `app`, `core:common`, `core:design`. **AGP 9.4.0 + Kotlin 2.4.20 + Compose BOM 2026.09.00**, compileSdk 37, minSdk 26
+6. ▣ GitHub Actions `build.yml`: проверка wrapper'а, detekt, lint, тесты, debug и release сборки, выгрузка APK. Плюс `dependabot.yml`
+7. ▣ `SETUP.md` переписан по факту прогона на чистой машине, с ловушками AGP 9 и новой CLI Android SDK
+8. ▢ Прогон `installDebug` на реальном Samsung
 
 **Готово, когда.** `./gradlew installDebug` ставит на телефон приложение, которое
 открывает один экран со словом «Zales» и версией сборки. CI зелёный на push в `main`.
+
+*Состояние:* `detekt`, `lint`, `assembleDebug` и `assembleRelease` проходят локально
+начисто; релизный APK после R8 весит 708 КБ. Осталось поставить на телефон и увидеть
+зелёный CI.
 
 **Риск.** Установка NDK и gomobile на Windows — самое хрупкое место всего проекта.
 *Смягчение:* нативные артефакты собирает CI на Linux; локально они не нужны для работы над интерфейсом.

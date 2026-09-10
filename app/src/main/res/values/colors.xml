@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors ZalesColors.Night.void — used for the window background so the
+         cold launch shows the thicket, not a white flash. -->
+    <color name="zales_void">#FF060A09</color>
+</resources>

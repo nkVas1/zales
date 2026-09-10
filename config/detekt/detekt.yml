@@ -1,0 +1,39 @@
+# Zales detekt configuration.
+# Built on top of the default rule set (buildUponDefaultConfig = true in the
+# root build script), so only deliberate deviations live here.
+
+build:
+  maxIssues: 0
+
+formatting:
+  active: true
+  android: true
+  MaximumLineLength:
+    active: true
+    maxLineLength: 120
+
+style:
+  MaxLineLength:
+    maxLineLength: 120
+  MagicNumber:
+    # Design tokens are full of intentional literals; the palette and the type
+    # scale are the specification, not magic.
+    excludes: ['**/design/**', '**/test/**', '**/androidTest/**']
+  UnusedPrivateMember:
+    active: true
+    # @Preview composables are entry points for the IDE and for screenshot
+    # tests; nothing in the source calls them.
+    ignoreAnnotated: ['Preview', 'PreviewLightDark', 'PreviewFontScale']
+
+complexity:
+  LongParameterList:
+    # Compose composables legitimately take many parameters.
+    functionThreshold: 8
+    ignoreAnnotated: ['Composable']
+
+naming:
+  FunctionNaming:
+    # Composables are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    ignoreAnnotated: ['Composable']

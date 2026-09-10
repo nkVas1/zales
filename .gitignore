@@ -19,6 +19,9 @@ native/prebuilt/
 *.aar
 *.so
 
+# The Gradle wrapper jar is part of the build contract and IS committed.
+!gradle/wrapper/gradle-wrapper.jar
+
 # ── IDE ────────────────────────────────────────────────────────────
 .idea/
 !.idea/codeStyles/
