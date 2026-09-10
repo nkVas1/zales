@@ -1,0 +1,43 @@
+# ── Android / Gradle ───────────────────────────────────────────────
+*.iml
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+.kotlin/
+
+# ── Signing material — NEVER commit ────────────────────────────────
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# ── Native artefacts produced by CI (built, not vendored) ──────────
+native/prebuilt/
+*.aar
+*.so
+
+# ── IDE ────────────────────────────────────────────────────────────
+.idea/
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+.vscode/
+*.swp
+
+# ── OS ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Personal working notes & scratch ───────────────────────────────
+dev-notes/
+scratch/
+*.local.md
+
+# ── Secrets & real access keys ─────────────────────────────────────
+.env
+.env.*
+secrets/
+**/*.key.txt
