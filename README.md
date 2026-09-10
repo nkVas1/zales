@@ -10,7 +10,8 @@
 [![License](https://img.shields.io/badge/license-MPL--2.0-2b2b2b?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-2b2b2b?style=flat-square)](#)
 [![Core](https://img.shields.io/badge/core-Xray--core-2b2b2b?style=flat-square)](https://github.com/XTLS/Xray-core)
-[![Status](https://img.shields.io/badge/status-Phase%200%20·%20проектирование-c77a32?style=flat-square)](docs/ROADMAP.md)
+[![CI](https://github.com/nkVas1/zales/actions/workflows/build.yml/badge.svg)](https://github.com/nkVas1/zales/actions/workflows/build.yml)
+[![Status](https://img.shields.io/badge/status-Фаза%200%20·%20основание-c77a32?style=flat-square)](docs/ROADMAP.md)
 
 </div>
 
@@ -70,9 +71,15 @@ Zales создавался с одним конкретным пользоват
 
 ## Статус
 
-**Фаза 0 — проектирование.** Кода приложения ещё нет; зафиксированы решения,
-архитектура и художественное направление. Актуальное состояние — в
-[ROADMAP.md](docs/ROADMAP.md).
+**Фаза 0 — основание.** Проект собирается и ставится на телефон, но пока показывает
+один экран: до туннеля дело дойдёт в фазе 1. Готовы решения, архитектура,
+художественное направление, каркас сборки и CI.
+
+```powershell
+.\gradlew installDebug
+```
+
+Что дальше и в каком порядке — в [ROADMAP.md](docs/ROADMAP.md).
 
 ## Лицензия
 
