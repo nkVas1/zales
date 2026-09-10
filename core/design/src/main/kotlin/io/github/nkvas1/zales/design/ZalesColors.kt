@@ -32,6 +32,12 @@ public data class ZalesColors(
     val breath: Color,
     /** The tone of the gaze. Barely above noise, and rare. */
     val watch: Color,
+    /**
+     * Rime — the only cold tone allowed to carry text. Same hue as [breath],
+     * lifted until it reaches 7:1 on [void]. [breath], [cold] and [rust] fail
+     * that bar on a real device and must never be used for text.
+     */
+    val rime: Color,
 
     // ── Hut: warm, objects only ────────────────────────────────────
     /** Lamplight. The brightest thing on the screen. */
@@ -59,6 +65,7 @@ public data class ZalesColors(
             cold = Color(0xFF2C3A3E),
             breath = Color(0xFF46595C),
             watch = Color(0xFF7A8F8B),
+            rime = Color(0xFF849EA2),
             lamp = Color(0xFFF0D9A8),
             bone = Color(0xFFE6DCC6),
             brass = Color(0xFFA8752E),
@@ -80,6 +87,7 @@ public data class ZalesColors(
             cold = Color(0xFF8D9A96),
             breath = Color(0xFF46524E),
             watch = Color(0xFF6B7A76),
+            rime = Color(0xFF3E4945),
             bone = Color(0xFF101614),
         )
     }

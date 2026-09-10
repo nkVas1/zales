@@ -44,7 +44,7 @@ fun ShellScreen(
         ZalesText(
             text = "$versionName · $versionCode",
             style = Zales.type.nameplate,
-            color = Zales.colors.cold,
+            color = Zales.colors.rime,
             modifier = Modifier.align(Alignment.TopEnd),
         )
 
@@ -62,7 +62,7 @@ fun ShellScreen(
             ZalesText(
                 text = "фаза 0 · основание",
                 style = Zales.type.caption,
-                color = Zales.colors.breath,
+                color = Zales.colors.rime,
                 align = TextAlign.Center,
                 modifier = Modifier.padding(top = 12.dp),
             )
@@ -71,7 +71,7 @@ fun ShellScreen(
         ZalesText(
             text = "здесь будет чаща",
             style = Zales.type.caption,
-            color = Zales.colors.breath,
+            color = Zales.colors.rime,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
