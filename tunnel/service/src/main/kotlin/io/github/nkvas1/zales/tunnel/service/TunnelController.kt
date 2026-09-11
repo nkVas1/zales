@@ -12,6 +12,7 @@ import android.net.VpnService
 import android.os.IBinder
 import io.github.nkvas1.zales.common.ZalesLog
 import io.github.nkvas1.zales.tunnel.api.TunnelState
+import io.github.nkvas1.zales.tunnel.diagnostics.Diagnosis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +31,23 @@ public class TunnelController(private val context: Context) {
     private val _state = MutableStateFlow<TunnelState>(TunnelState.Idle)
     public val state: StateFlow<TunnelState> = _state.asStateFlow()
 
+    private val _diagnosis = MutableStateFlow<Diagnosis?>(null)
+
+    /** The path check as it runs, or null when none has been asked for. */
+    public val diagnosis: StateFlow<Diagnosis?> = _diagnosis.asStateFlow()
+
     private var service: ITunnelService? = null
+
+    /** A check asked for before the binding arrived; binding is asynchronous. */
+    private var checkWanted = false
 
     private val callback = object : ITunnelCallback.Stub() {
         override fun onStatus(status: TunnelStatus) {
             _state.value = status.toState()
+        }
+
+        override fun onDiagnosis(diagnosis: DiagnosisStatus) {
+            _diagnosis.value = diagnosis.toDiagnosis()
         }
     }
 
@@ -45,6 +58,10 @@ public class TunnelController(private val context: Context) {
             runCatching { remote.register(callback) }
                 .onSuccess { _state.value = it.toState() }
                 .onFailure { ZalesLog.warn(ZalesLog.TAG_UI, "could not register for tunnel updates", it) }
+            if (checkWanted) {
+                checkWanted = false
+                runCatching { remote.diagnose() }
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -87,6 +104,30 @@ public class TunnelController(private val context: Context) {
 
     public fun retry() {
         runCatching { service?.retry() }.onFailure { open() }
+    }
+
+    /**
+     * Asks the tunnel process to walk the probe ladder.
+     *
+     * Binding first, because a check is most often wanted exactly when nothing
+     * is running and there is therefore nothing bound.
+     */
+    public fun diagnose() {
+        _diagnosis.value = Diagnosis.starting()
+        val remote = service
+        if (remote == null) {
+            checkWanted = true
+            bind()
+            return
+        }
+        runCatching { remote.diagnose() }
+            .onFailure { ZalesLog.warn(ZalesLog.TAG_UI, "could not start the path check", it) }
+    }
+
+    public fun forgetDiagnosis() {
+        checkWanted = false
+        runCatching { service?.cancelDiagnosis() }
+        _diagnosis.value = null
     }
 
     public fun bind() {

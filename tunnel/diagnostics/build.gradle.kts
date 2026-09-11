@@ -3,22 +3,23 @@ plugins {
 }
 
 android {
-    namespace = "io.github.nkvas1.zales.tunnel.service"
-
-    buildFeatures {
-        aidl = true
-    }
+    namespace = "io.github.nkvas1.zales.tunnel.diagnostics"
 }
 
 dependencies {
     api(project(":tunnel:api"))
     api(project(":core:model"))
     implementation(project(":core:common"))
-    implementation(project(":core:storage"))
-    implementation(project(":parsing"))
     implementation(project(":tunnel:autopilot"))
-    api(project(":tunnel:diagnostics"))
-    implementation(project(":tunnel:engine-xray"))
     implementation(project(":tunnel:xray-config"))
     implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

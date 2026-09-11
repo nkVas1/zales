@@ -41,6 +41,9 @@ import io.github.nkvas1.zales.tunnel.autopilot.Uplink
 import io.github.nkvas1.zales.tunnel.autopilot.UplinkProbe
 import io.github.nkvas1.zales.tunnel.autopilot.Verdict
 import io.github.nkvas1.zales.tunnel.autopilot.Watchdog
+import io.github.nkvas1.zales.tunnel.diagnostics.Environment
+import io.github.nkvas1.zales.tunnel.diagnostics.PathCheck
+import io.github.nkvas1.zales.tunnel.diagnostics.Survival
 import io.github.nkvas1.zales.tunnel.xray.XrayConfigBuilder
 import io.github.nkvas1.zales.tunnel.xray.engine.XrayEngine
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +55,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,11 +86,14 @@ public class ZalesVpnService : VpnService() {
     private lateinit var fingerprinter: NetworkFingerprinter
     private lateinit var uplink: UplinkProbe
     private lateinit var profiles: StoredNetworkProfiles
+    private lateinit var survival: Survival
+    private lateinit var pathCheck: PathCheck
 
     private var tun: ParcelFileDescriptor? = null
     private var trafficJob: Job? = null
     private var trafficBase = Traffic.Zero
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var checkJob: Job? = null
 
     /** Held so a recovery can start another race without waking the key store. */
     private var activeKey: AccessKey? = null
@@ -117,6 +124,10 @@ public class ZalesVpnService : VpnService() {
         override fun open() = this@ZalesVpnService.open()
         override fun close() = this@ZalesVpnService.close()
         override fun retry() = this@ZalesVpnService.open()
+        override fun diagnose() = this@ZalesVpnService.diagnose()
+        override fun cancelDiagnosis() {
+            checkJob?.cancel()
+        }
     }
 
     override fun onCreate() {
@@ -128,6 +139,14 @@ public class ZalesVpnService : VpnService() {
         uplink = UplinkProbe(this)
         profiles = StoredNetworkProfiles(this)
         autopilot = Autopilot(engine = engine, profiles = profiles, resolver = cachingResolver())
+        survival = Survival(this)
+        survival.openLedger()
+        pathCheck = PathCheck(
+            engine = engine,
+            uplink = { uplink.current() },
+            background = { survival.verdict() },
+            environment = { environment() },
+        )
         watchNetwork()
         ZalesLog.info(ZalesLog.TAG_TUNNEL, "tunnel process started")
     }
@@ -303,6 +322,7 @@ public class ZalesVpnService : VpnService() {
         engine.stop()
         engine.setProtector(null)
         closeDescriptor()
+        survival.markStopped()
         activeKey = null
         update(finalState)
         stopForeground(STOP_FOREGROUND_REMOVE)
@@ -418,6 +438,7 @@ public class ZalesVpnService : VpnService() {
     }
 
     private fun connected(strategy: StrategyId, latencyMs: Int) {
+        survival.markRunning()
         trafficBase = currentTraffic()
         watchdog.reset()
         backoff.reset()
@@ -491,6 +512,7 @@ public class ZalesVpnService : VpnService() {
 
     private suspend fun fail(code: FailureCode, detail: String) {
         ZalesLog.warn(ZalesLog.TAG_TUNNEL, "tunnel failed: ${code.printable}")
+        survival.markStopped()
         trafficJob?.cancel()
         engine.stop()
         engine.setProtector(null)
@@ -502,6 +524,47 @@ public class ZalesVpnService : VpnService() {
     private fun closeDescriptor() {
         runCatching { tun?.close() }
         tun = null
+    }
+
+    // ── The path check ─────────────────────────────────────────────────
+
+    /**
+     * Runs the ladder here rather than in the interface process.
+     *
+     * Two reasons, both hard: the key never leaves this process, and only a
+     * `VpnService` can keep its own sockets out of a tunnel that may be up
+     * while the check is running.
+     */
+    private fun diagnose() {
+        checkJob?.cancel()
+        val key = activeKey
+        checkJob = scope.launch {
+            val subject = key ?: runCatching { keys.activeKey() }.getOrNull() ?: return@launch
+            pathCheck.run(subject).collect { diagnosis ->
+                broadcast(DiagnosisStatus.of(diagnosis))
+                // A check that ends in a diagnosis about this phone has told
+                // the person something they can act on; the tally starts again.
+                if (diagnosis.finished && diagnosis.verdict == null) survival.forgive()
+            }
+        }
+    }
+
+    private fun environment(): Environment = Environment(
+        appVersion = runCatching {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        }.getOrNull().orEmpty(),
+        androidVersion = Build.VERSION.RELEASE.orEmpty(),
+        deviceModel = Build.MODEL.orEmpty(),
+        coreVersion = engine.version,
+        network = activeNetwork.id,
+    )
+
+    private fun broadcast(diagnosis: DiagnosisStatus) {
+        val count = listeners.beginBroadcast()
+        repeat(count) { index ->
+            runCatching { listeners.getBroadcastItem(index).onDiagnosis(diagnosis) }
+        }
+        listeners.finishBroadcast()
     }
 
     private fun update(next: TunnelState) {

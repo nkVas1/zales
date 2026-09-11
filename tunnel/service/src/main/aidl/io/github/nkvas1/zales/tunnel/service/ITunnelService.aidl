@@ -16,4 +16,13 @@ interface ITunnelService {
 
     /** Tries again after a failure, starting the strategy race from the top. */
     void retry();
+
+    /**
+     * Walks the probe ladder and reports each rung through onDiagnosis.
+     * Runs here, in the tunnel process, because only this side holds the key
+     * and only this side can keep its own sockets out of the tunnel.
+     */
+    void diagnose();
+
+    void cancelDiagnosis();
 }
