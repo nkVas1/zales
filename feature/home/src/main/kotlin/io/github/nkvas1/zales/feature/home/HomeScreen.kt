@@ -29,6 +29,7 @@ import io.github.nkvas1.zales.design.component.ZalesText
 import io.github.nkvas1.zales.design.switchboard.KnifeSwitch
 import io.github.nkvas1.zales.design.thicket.ThicketState
 import io.github.nkvas1.zales.design.thicket.ThicketSurface
+import io.github.nkvas1.zales.tunnel.api.FailureCode
 import io.github.nkvas1.zales.tunnel.api.TunnelState
 import io.github.nkvas1.zales.tunnel.api.isEngaged
 import io.github.nkvas1.zales.words.FailureAction
@@ -129,7 +130,7 @@ private fun Panel(
                 .sizeIn(minHeight = 220.dp),
         )
 
-        Explanation(state, onAction)
+        Guidance(state, onAction)
 
         Spacer(Modifier.weight(BOTTOM_WEIGHT))
 
@@ -143,11 +144,37 @@ private fun Panel(
     }
 }
 
+/**
+ * The strip under the switch, which is empty almost all of the time.
+ *
+ * Two things can appear here and they can never appear together: what went
+ * wrong, or — the first few times only — how the handle is meant to be moved.
+ */
+@Composable
+private fun Guidance(state: HomeUiState, onAction: (FailureAction) -> Unit) {
+    val failure = (state.tunnel as? TunnelState.Failed)?.failure
+    when {
+        failure != null -> Explanation(failure.code, onAction)
+        state.hint -> Hint()
+    }
+}
+
+/** Said once and then let go of, the way you would tell someone in person. */
+@Composable
+private fun Hint() {
+    ZalesText(
+        text = stringResource(Words.throwHint),
+        style = Zales.type.body,
+        color = Zales.colors.rime,
+        align = TextAlign.Center,
+        modifier = Modifier.padding(top = 16.dp, start = 24.dp, end = 24.dp),
+    )
+}
+
 /** One sentence and at most one thing to do. Never a code, never a list. */
 @Composable
-private fun Explanation(state: HomeUiState, onAction: (FailureAction) -> Unit) {
-    val failure = (state.tunnel as? TunnelState.Failed)?.failure ?: return
-    val action = Words.action(failure.code)
+private fun Explanation(code: FailureCode, onAction: (FailureAction) -> Unit) {
+    val action = Words.action(code)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -155,7 +182,7 @@ private fun Explanation(state: HomeUiState, onAction: (FailureAction) -> Unit) {
         modifier = Modifier.padding(top = 16.dp),
     ) {
         ZalesText(
-            text = stringResource(Words.sentence(failure.code)),
+            text = stringResource(Words.sentence(code)),
             style = Zales.type.body,
             color = Zales.colors.bone,
             align = TextAlign.Center,

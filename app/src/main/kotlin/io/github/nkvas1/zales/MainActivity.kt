@@ -38,7 +38,13 @@ public class MainActivity : ComponentActivity() {
     private val container: ZalesContainer by lazy { (application as ZalesApp).container }
 
     private val home: HomeViewModel by viewModels {
-        HomeViewModel.factory(container.tunnel, container.keys, container.voice, BuildConfig.VERSION_NAME)
+        HomeViewModel.factory(
+            container.tunnel,
+            container.keys,
+            container.voice,
+            BuildConfig.VERSION_NAME,
+            container.hints,
+        )
     }
     private val key: KeyViewModel by viewModels {
         KeyViewModel.factory(container.keys, AndroidClipboard(applicationContext))

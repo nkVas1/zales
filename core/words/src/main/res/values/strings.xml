@@ -77,4 +77,6 @@
     <string name="parse_unrecognized">Я не смог прочитать этот ключ. Похоже, он скопирован не целиком.</string>
     <string name="parse_incomplete">В ключе потерялся кусок — так бывает, когда его скопировали не до конца.</string>
     <string name="parse_unsupported">Этот ключ работает по способу, которого я пока не умею.</string>
+    <!-- Shown once, the first time a short tap is mistaken for a throw. -->
+    <string name="hint_throw">Рукоять нужно поднять вверх. Потяните её пальцем или просто задержите на ней палец.</string>
 </resources>

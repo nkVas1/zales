@@ -119,7 +119,10 @@ private fun Modifier.holdToThrow(
             haptics.grasp()
             when (withTimeoutOrNull(Blade.HOLD_TO_THROW_MS) { tryAwaitRelease() }) {
                 // Let go at once: that was a touch, not a throw. Say so, once.
-                true -> onHint()
+                true -> {
+                    blade.shudder()
+                    onHint()
+                }
                 // Still down after the dwell: carry it over for them.
                 null -> {
                     blade.driveOver(!closed)
@@ -204,5 +207,5 @@ private const val MIN_FRAME_PX = 240
 private const val MAX_FRAME_PX = 520
 
 private const val ACTION_DESCRIPTION = "Рубильник"
-private const val CLOSED_DESCRIPTION = "Опущен, тропа открыта"
-private const val OPEN_DESCRIPTION = "Поднят, тропа закрыта"
+private const val CLOSED_DESCRIPTION = "Поднят, тропа открыта"
+private const val OPEN_DESCRIPTION = "Опущен, тропа закрыта"

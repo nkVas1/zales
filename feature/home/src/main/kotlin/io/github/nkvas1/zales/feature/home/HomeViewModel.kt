@@ -13,6 +13,7 @@ import io.github.nkvas1.zales.tunnel.service.TunnelController
 import io.github.nkvas1.zales.voice.Mood
 import io.github.nkvas1.zales.voice.SayingContext
 import io.github.nkvas1.zales.voice.SayingVoice
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,6 +34,8 @@ public data class HomeUiState(
     val canSwitch: Boolean = false,
     val pulse: Float = 0f,
     val gaze: Float = 0f,
+    /** The one sentence of teaching, while it is on screen. */
+    val hint: Boolean = false,
 )
 
 /** Something the screen cannot do by itself and must ask an Activity for. */
@@ -48,11 +51,14 @@ public class HomeViewModel(
     private val keys: KeyRepository,
     voice: SayingVoice,
     private val versionName: String,
+    private val hints: HintMemory = ForgetfulHintMemory(),
     private val random: Random = Random.Default,
 ) : ViewModel() {
 
     private val hasKey = MutableStateFlow(false)
     private val gaze = MutableStateFlow(0f)
+    private val hint = MutableStateFlow(false)
+    private var hintJob: Job? = null
     private val events = MutableStateFlow<HomeEvent?>(null)
 
     public val event: StateFlow<HomeEvent?> = events
@@ -64,7 +70,8 @@ public class HomeViewModel(
         hasKey,
         voice.stream(mood),
         gaze,
-    ) { tunnelState, keyPresent, saying, gazeValue ->
+        hint,
+    ) { tunnelState, keyPresent, saying, gazeValue, hintVisible ->
         HomeUiState(
             tunnel = tunnelState,
             plate = plateFor(tunnelState),
@@ -72,6 +79,7 @@ public class HomeViewModel(
             canSwitch = keyPresent || tunnelState !is TunnelState.Idle,
             pulse = tunnelState.pulse(),
             gaze = gazeValue,
+            hint = hintVisible,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState())
 
@@ -105,9 +113,19 @@ public class HomeViewModel(
         events.value = null
     }
 
-    /** A short tap is not a throw: say so once, quietly, and never again nag. */
+    /**
+     * A short tap is not a throw. Say so plainly, let it stand long enough to
+     * be read without hurrying, and stop saying it once it has been learned.
+     */
     public fun hint() {
-        events.value = null
+        if (hints.timesShown() >= HintMemory.ENOUGH) return
+        hints.recordShown()
+        hintJob?.cancel()
+        hintJob = viewModelScope.launch {
+            hint.value = true
+            delay(HINT_VISIBLE_MS)
+            hint.value = false
+        }
     }
 
     public fun openKeys() {
@@ -157,15 +175,19 @@ public class HomeViewModel(
         private const val GAZE_DURATION_MS = 1_200L
         private const val DEGRADED_PULSE = 0.3f
 
+        /** Long enough for an unhurried reader; short enough not to become furniture. */
+        private const val HINT_VISIBLE_MS = 6_000L
+
         public fun factory(
             tunnel: TunnelController,
             keys: KeyRepository,
             voice: SayingVoice,
             versionName: String,
+            hints: HintMemory,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                HomeViewModel(tunnel, keys, voice, versionName) as T
+                HomeViewModel(tunnel, keys, voice, versionName, hints) as T
         }
     }
 }

@@ -96,6 +96,10 @@ public object Words {
         ParseFailure.INCOMPLETE -> R.string.parse_incomplete
         ParseFailure.UNSUPPORTED_PROTOCOL -> R.string.parse_unsupported
     }
+
+    /** The one thing a person is ever taught about the switch, said once. */
+    @StringRes
+    public val throwHint: Int = R.string.hint_throw
 }
 
 /** The single offered action, with the label the button carries. */

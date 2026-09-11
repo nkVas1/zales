@@ -92,6 +92,26 @@ internal class Blade(initialTravel: Float, private val haptics: ZalesHaptics) {
         held = false
     }
 
+    /**
+     * A touch that was not a throw: the handle stirs a few millimetres and
+     * falls back. It is the answer to "did it hear me?" — and it is the reason
+     * the written hint underneath is believed rather than argued with.
+     */
+    suspend fun shudder() {
+        val from = travel
+        val towards = if (from > HALF) from - SHUDDER_TRAVEL else from + SHUDDER_TRAVEL
+        held = true
+        repeat(SHUDDER_STEPS) { step ->
+            val phase = (step + 1f) / SHUDDER_STEPS
+            // Out and back within one short breath, without a notch tick.
+            travel = (from + (towards - from) * kotlin.math.sin(phase * Math.PI.toFloat())).coerceIn(0f, 1f)
+            delay(SHUDDER_STEP_MS)
+        }
+        travel = from
+        lastNotch = from
+        held = false
+    }
+
     /** A little overshoot at the end, the way a real handle settles into its stop. */
     private fun easeOutBack(t: Float): Float {
         val overshoot = 1.70158f
@@ -114,6 +134,10 @@ internal class Blade(initialTravel: Float, private val haptics: ZalesHaptics) {
         private const val GRAVITY = 2.4f
         private const val DRIVE_STEPS = 22
         private const val DRIVE_STEP_MS = 16L
+        private const val HALF = 0.5f
+        private const val SHUDDER_TRAVEL = 0.045f
+        private const val SHUDDER_STEPS = 12
+        private const val SHUDDER_STEP_MS = 16L
     }
 }
 
