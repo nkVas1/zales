@@ -571,12 +571,25 @@ public class ZalesVpnService : VpnService() {
         val key = activeKey
         checkJob = scope.launch {
             val subject = key ?: runCatching { keys.activeKey() }.getOrNull() ?: return@launch
+
+            // The core measures ways in from an otherwise idle process and
+            // refuses outright while it is itself running one. So the tunnel
+            // steps aside for the few seconds of the check and is put back
+            // afterwards, over the same interface, which never comes down.
+            val resume = activeChoice.takeIf { engine.isRunning() }
+            if (resume != null) {
+                trafficJob?.cancel()
+                engine.stop()
+            }
+
             pathCheck.run(subject).collect { diagnosis ->
                 broadcast(DiagnosisStatus.of(diagnosis))
-                // A check that ends in a diagnosis about this phone has told
-                // the person something they can act on; the tally starts again.
+                // A check that ends clean has told the person something they can
+                // act on; the tally of unexplained deaths starts again.
                 if (diagnosis.finished && diagnosis.verdict == null) survival.forgive()
             }
+
+            if (resume != null) engage(subject, resume)
         }
     }
 

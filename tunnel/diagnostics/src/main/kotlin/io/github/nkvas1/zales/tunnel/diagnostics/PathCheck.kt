@@ -214,15 +214,20 @@ public class PathCheck(
      */
     private fun checkPath(key: AccessKey, address: String?, attempts: MutableList<StrategyAttempt>): Upper {
         val rungs = ladder.rungsFor(key, address)
-        val results = engine.probe(rungs.map { XrayConfigBuilder.forProbe(key, it) }, probeUrl, PROBE_TIMEOUT_MS)
-        rungs.forEachIndexed { index, tactics ->
-            val result = results.getOrNull(index)
-            attempts += StrategyAttempt(
-                id = tactics.id.value,
-                ok = result?.success == true,
-                millis = result?.delayMs ?: 0,
-                error = result?.error,
-            )
+        // Measured in waves the core will accept. Unlike the autopilot this
+        // does not stop at the first answer: the report is worth more when it
+        // says what every way in did, not merely that one of them worked.
+        rungs.chunked(engine.probeBatchLimit).forEach { wave ->
+            val results = engine.probe(wave.map { XrayConfigBuilder.forProbe(key, it) }, probeUrl, PROBE_TIMEOUT_MS)
+            wave.forEachIndexed { index, tactics ->
+                val result = results.getOrNull(index)
+                attempts += StrategyAttempt(
+                    id = tactics.id.value,
+                    ok = result?.success == true,
+                    millis = result?.delayMs ?: 0,
+                    error = result?.error,
+                )
+            }
         }
 
         val winner = attempts.filter { it.ok }.minByOrNull { it.millis }

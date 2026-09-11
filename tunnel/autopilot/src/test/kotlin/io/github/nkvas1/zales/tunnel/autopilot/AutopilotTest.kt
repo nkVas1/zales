@@ -8,6 +8,7 @@ import io.github.nkvas1.zales.model.AccessKey
 import io.github.nkvas1.zales.model.Endpoint
 import io.github.nkvas1.zales.model.Security
 import io.github.nkvas1.zales.model.Transport
+import io.github.nkvas1.zales.tunnel.api.DEFAULT_PROBE_BATCH
 import io.github.nkvas1.zales.tunnel.api.EngineConfig
 import io.github.nkvas1.zales.tunnel.api.EngineResult
 import io.github.nkvas1.zales.tunnel.api.ProbeResult
@@ -40,7 +41,10 @@ class AutopilotTest {
     )
 
     /** Answers probes from a script, and records how many times it was asked. */
-    private class ScriptedEngine(private val script: (Int) -> ProbeResult) : TunnelEngine {
+    private class ScriptedEngine(
+        override val probeBatchLimit: Int = DEFAULT_PROBE_BATCH,
+        private val script: (Int) -> ProbeResult,
+    ) : TunnelEngine {
         var batches = 0
             private set
         var probed = 0
@@ -54,6 +58,9 @@ class AutopilotTest {
         override fun isRunning() = false
 
         override fun probe(configs: List<EngineConfig>, url: String, timeoutMs: Int): List<ProbeResult> {
+            check(configs.size <= probeBatchLimit) {
+                "the core rejects a batch of ${configs.size} whole; it takes at most $probeBatchLimit"
+            }
             batches++
             probed += configs.size
             return configs.indices.map(script)
@@ -140,6 +147,32 @@ class AutopilotTest {
 
         assertTrue(choice is Choice.Found, "the ladder should have rescued it, got $choice")
         assertEquals(2, engine.batches)
+    }
+
+    @Test
+    fun `a ladder longer than one batch is raced in waves, not rejected whole`() = runTest {
+        // Nothing in the first wave answers; something below it does. The
+        // whole point is that the batch limit must not hide the rest of the
+        // ladder, which is what sending it whole would do.
+        var measured = 0
+        val engine = ScriptedEngine(probeBatchLimit = 2) {
+            measured++
+            if (measured > 2) success(180) else failure()
+        }
+
+        val choice = Autopilot(engine, Profiles(), resolver("203.0.113.7")).choose(realityKey, here)
+
+        assertTrue(choice is Choice.Found, "a winner below the first wave must still be found: $choice")
+        assertTrue(engine.batches > 1, "a long ladder must be split into waves")
+    }
+
+    @Test
+    fun `the first wave that answers ends the race`() = runTest {
+        val engine = ScriptedEngine(probeBatchLimit = 2) { success(delay = 120) }
+
+        Autopilot(engine, Profiles(), resolver("203.0.113.7")).choose(realityKey, here)
+
+        assertEquals(1, engine.batches, "nothing below a winning wave should be measured")
     }
 
     @Test

@@ -13,6 +13,9 @@ package io.github.nkvas1.zales.tunnel.api
  * Implementations are not required to be thread-safe; the tunnel service
  * serialises calls.
  */
+/** What libXray's `pingBatch` accepts in one call. */
+public const val DEFAULT_PROBE_BATCH: Int = 5
+
 public interface TunnelEngine {
 
     /** Human-readable core version for the technical report, e.g. `Xray 26.9.9`. */
@@ -45,6 +48,15 @@ public interface TunnelEngine {
      * through it, without touching the TUN. Used by the strategy race.
      */
     public fun probe(configs: List<EngineConfig>, url: String, timeoutMs: Int): List<ProbeResult>
+
+    /**
+     * How many configurations may be measured in one call.
+     *
+     * Not a suggestion: a batch over the limit is rejected whole, so a caller
+     * that ignores this measures nothing at all and cannot tell why.
+     */
+    public val probeBatchLimit: Int
+        get() = DEFAULT_PROBE_BATCH
 }
 
 /** A complete, engine-specific configuration document. Contains secrets. */

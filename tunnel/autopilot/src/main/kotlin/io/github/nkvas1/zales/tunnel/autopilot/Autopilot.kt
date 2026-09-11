@@ -58,22 +58,35 @@ public class Autopilot(
             }
         }
 
-        val results = engine.probe(rungs.map { XrayConfigBuilder.forProbe(key, it) }, probeUrl, probeTimeoutMs)
-        val winner = rungs.indices
-            .mapNotNull { index -> results.getOrNull(index)?.takeIf { it.success }?.let { index to it } }
-            .minByOrNull { (_, result) -> result.delayMs }
+        return race(key, rungs, network)
+    }
 
-        if (winner == null) {
-            val reason = results.firstNotNullOfOrNull { it.error } ?: "every strategy failed"
-            ZalesLog.warn(ZalesLog.TAG_TUNNEL, "autopilot exhausted ${rungs.size} strategies")
-            return Choice.None(reason)
+    /**
+     * Measures the ladder in waves, stopping at the first wave that answers.
+     *
+     * The core will not measure more than a handful of ways in at once, and a
+     * batch over that limit is rejected whole rather than trimmed — so a ladder
+     * longer than one wave is raced in two, best candidates first. In practice
+     * the first wave wins and this costs exactly what it always did.
+     */
+    private fun race(key: AccessKey, rungs: List<Tactics>, network: NetworkFingerprint): Choice {
+        var firstError: String? = null
+        rungs.chunked(engine.probeBatchLimit).forEach { wave ->
+            val results = engine.probe(wave.map { XrayConfigBuilder.forProbe(key, it) }, probeUrl, probeTimeoutMs)
+            firstError = firstError ?: results.firstNotNullOfOrNull { it.error }
+            val winner = wave.indices
+                .mapNotNull { index -> results.getOrNull(index)?.takeIf { it.success }?.let { index to it } }
+                .minByOrNull { (_, result) -> result.delayMs }
+            if (winner != null) {
+                val (index, result) = winner
+                val tactics = wave[index]
+                profiles.remember(network, tactics.id)
+                ZalesLog.info(ZalesLog.TAG_TUNNEL, "autopilot chose ${tactics.id} in ${result.delayMs} ms")
+                return Choice.Found(tactics, result.delayMs.toInt())
+            }
         }
-
-        val (index, result) = winner
-        val tactics = rungs[index]
-        profiles.remember(network, tactics.id)
-        ZalesLog.info(ZalesLog.TAG_TUNNEL, "autopilot chose ${tactics.id} in ${result.delayMs} ms")
-        return Choice.Found(tactics, result.delayMs.toInt())
+        ZalesLog.warn(ZalesLog.TAG_TUNNEL, "autopilot exhausted ${rungs.size} strategies")
+        return Choice.None(firstError ?: "every strategy failed")
     }
 
     /** Probes a single rung. Returns its latency, or null if it did not answer. */
