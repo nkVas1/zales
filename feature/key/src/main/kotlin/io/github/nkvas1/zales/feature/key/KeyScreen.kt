@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
@@ -42,7 +44,85 @@ public fun KeyScreen(
     onPasteClipboard: () -> Unit,
     onSave: () -> Unit,
     onForget: (String) -> Unit,
+    onScan: () -> Unit,
+    onScanned: (String) -> Unit,
+    onPickPicture: () -> Unit,
+    onHandoff: (String) -> Unit,
+    onCloseOverlay: () -> Unit,
     modifier: Modifier = Modifier,
+) {
+    when (state.mode) {
+        KeyMode.SCAN -> Overlay(modifier) { QrScanner(onFound = onScanned, onGiveUp = onCloseOverlay) }
+        KeyMode.HANDOFF -> Overlay(modifier) { Handoff(state, onCloseOverlay) }
+        KeyMode.TEXT -> Paperwork(
+            state,
+            onTextChange,
+            onPasteClipboard,
+            onSave,
+            onForget,
+            onScan,
+            onPickPicture,
+            onHandoff,
+            modifier,
+        )
+    }
+}
+
+/** The two faces that take over the whole screen: the camera and the code. */
+@Composable
+private fun Overlay(modifier: Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Zales.colors.void)
+            .safeDrawingPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        content = content,
+    )
+}
+
+/**
+ * This phone's key, drawn for another phone's camera.
+ *
+ * The whole point of the grandson-to-grandfather handover: nothing is typed,
+ * nothing is read aloud over the telephone, nothing is sent through a messenger
+ * that keeps a copy for ever.
+ */
+@Composable
+private fun Handoff(state: KeyUiState, onClose: () -> Unit) {
+    ZalesText(text = stringResource(R.string.key_handoff), style = Zales.type.title, color = Zales.colors.bone)
+    val text = state.handoff
+    if (text == null) {
+        ZalesText(
+            text = stringResource(R.string.key_handoff_too_big),
+            style = Zales.type.body,
+            color = Zales.colors.rust,
+        )
+    } else {
+        ZalesText(
+            text = stringResource(R.string.key_handoff_explain),
+            style = Zales.type.body,
+            color = Zales.colors.rime,
+        )
+        val grid = remember(text) { Qr.encode(text) }
+        grid?.let { QrPlate(it) }
+    }
+    PlateButton(text = stringResource(R.string.key_handoff_close), onClick = onClose)
+}
+
+@Composable
+private fun Paperwork(
+    state: KeyUiState,
+    onTextChange: (TextFieldValue) -> Unit,
+    onPasteClipboard: () -> Unit,
+    onSave: () -> Unit,
+    onForget: (String) -> Unit,
+    onScan: () -> Unit,
+    onPickPicture: () -> Unit,
+    onHandoff: (String) -> Unit,
+    modifier: Modifier,
 ) {
     Column(
         modifier = modifier
@@ -61,6 +141,12 @@ public fun KeyScreen(
         )
 
         ClipboardOffer(offered = state.clipboardLooksLikeKey, onPaste = onPasteClipboard)
+
+        // Offered before the field, because a key nearly always arrives as a
+        // picture on someone else's screen or in a messenger, not as text
+        // anybody would want to retype.
+        PlateButton(text = stringResource(R.string.key_scan), onClick = onScan)
+        PlateButton(text = stringResource(R.string.key_scan_picture), onClick = onPickPicture)
 
         BasicTextField(
             value = state.text,
@@ -87,7 +173,11 @@ public fun KeyScreen(
             Spacer(Modifier.heightIn(min = 8.dp))
             ZalesText(text = stringResource(R.string.key_stored), style = Zales.type.caption, color = Zales.colors.rime)
             state.stored.forEach { key ->
-                StoredKeyRow(key = key, onForget = { onForget(key.id) })
+                StoredKeyRow(
+                    key = key,
+                    onForget = { onForget(key.id) },
+                    onHandoff = { onHandoff(key.id) },
+                )
             }
         }
     }
@@ -122,7 +212,7 @@ private fun SaveOutcome(state: KeyUiState) {
 }
 
 @Composable
-private fun StoredKeyRow(key: StoredKeyView, onForget: () -> Unit) {
+private fun StoredKeyRow(key: StoredKeyView, onForget: () -> Unit, onHandoff: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,6 +230,7 @@ private fun StoredKeyRow(key: StoredKeyView, onForget: () -> Unit) {
                 color = Zales.colors.rust,
             )
         }
+        PlateButton(text = stringResource(R.string.key_handoff), onClick = onHandoff)
         PlateButton(text = stringResource(R.string.key_forget), onClick = onForget)
     }
 }

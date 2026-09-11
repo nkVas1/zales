@@ -16,6 +16,12 @@ androidxCore = "1.19.0"
 androidxActivity = "1.13.0"
 androidxLifecycle = "2.11.0"
 composeBom = "2026.09.00"
+androidxCamera = "1.6.2"
+
+# ── QR ─────────────────────────────────────────────────────────────
+# ZXing rather than ML Kit: ML Kit needs Google Play services, and a
+# phone in Russia installed from GitHub may well not have them.
+zxing = "3.5.4"
 
 # ── Native core (native/core, libXray CalVer) ──────────────────────
 zalesCore = "26.9.9"
@@ -35,6 +41,12 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "androidxCamera" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidxCamera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidxCamera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidxCamera" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 compose-ui = { module = "androidx.compose.ui:ui" }

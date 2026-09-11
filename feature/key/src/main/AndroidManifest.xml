@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The camera is asked for at the moment the code reader opens and never
+     before. A VPN that wants the camera on first launch has a great deal of
+     explaining to do, and nobody reads the explanation. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+</manifest>

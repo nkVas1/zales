@@ -6,12 +6,17 @@ package io.github.nkvas1.zales
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
@@ -31,9 +36,11 @@ import io.github.nkvas1.zales.feature.home.HomeScreen
 import io.github.nkvas1.zales.feature.home.HomeUiState
 import io.github.nkvas1.zales.feature.home.HomeViewModel
 import io.github.nkvas1.zales.feature.key.AndroidClipboard
+import io.github.nkvas1.zales.feature.key.KeyMode
 import io.github.nkvas1.zales.feature.key.KeyScreen
 import io.github.nkvas1.zales.feature.key.KeyUiState
 import io.github.nkvas1.zales.feature.key.KeyViewModel
+import io.github.nkvas1.zales.feature.key.Qr
 import io.github.nkvas1.zales.words.FailureAction
 
 /** Where in the app we are. Three places, and no navigation library to say so. */
@@ -121,6 +128,12 @@ public class MainActivity : ComponentActivity() {
 
     @Composable
     private fun Keys(state: KeyUiState, go: (Place) -> Unit) {
+        // A key is most often a screenshot in a messenger, so reading one out
+        // of the gallery matters at least as much as the camera does.
+        val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            val text = uri?.let { readCode(it) }
+            if (text != null) key.onScanned(text) else key.scanFoundNothing()
+        }
         KeyScreen(
             state = state,
             onTextChange = key::onTextChange,
@@ -133,9 +146,21 @@ public class MainActivity : ComponentActivity() {
                 key.forget(id)
                 home.refreshKeys()
             },
+            onScan = key::scan,
+            onScanned = { text ->
+                key.onScanned(text)
+                home.refreshKeys()
+            },
+            onPickPicture = {
+                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
+            onHandoff = key::showHandoff,
+            onCloseOverlay = key::closeOverlay,
             modifier = Modifier,
         )
-        BackHandler { go(Place.HOME) }
+        BackHandler {
+            if (state.mode == KeyMode.TEXT) go(Place.HOME) else key.closeOverlay()
+        }
     }
 
     @Composable
@@ -156,10 +181,38 @@ public class MainActivity : ComponentActivity() {
         BackHandler { leave() }
     }
 
-    override fun onResume() {
-        super.onResume()
-        home.refreshKeys()
-        key.refresh()
+    /**
+     * Reads a code out of a picture the person chose.
+     *
+     * Decoded twice on purpose: once for its dimensions alone, then again
+     * downsampled. A modern phone's screenshot is several times larger than any
+     * reader needs, and decoding it whole is both slower and an easy way to run
+     * an older device out of heap.
+     *
+     * BitmapFactory rather than ImageDecoder because the pixels have to be read
+     * back, which rules out a hardware bitmap anyway — and this way there is one
+     * path instead of one per Android version.
+     */
+    private fun readCode(uri: Uri): String? = runCatching {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+
+        val options = BitmapFactory.Options().apply {
+            inSampleSize = sampleSize(maxOf(bounds.outWidth, bounds.outHeight))
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
+        val bitmap = contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        } ?: return null
+
+        Qr.readImage(bitmap).also { bitmap.recycle() }
+    }.getOrNull()
+
+    /** The largest power of two that still leaves the picture readable. */
+    private fun sampleSize(longestSide: Int): Int {
+        var sample = 1
+        while (longestSide / sample > MAX_PICTURE) sample *= 2
+        return sample
     }
 
     /** The single action offered under a failure, carried out. */
@@ -184,5 +237,10 @@ public class MainActivity : ComponentActivity() {
     private fun open(action: String) {
         runCatching { startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
             .onFailure { ZalesLog.warn(ZalesLog.TAG_UI, "no activity for $action", it) }
+    }
+
+    private companion object {
+        /** Plenty for any code; far less than a modern screenshot. */
+        const val MAX_PICTURE = 1_600
     }
 }

@@ -32,7 +32,20 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 
+/** Which of the screen's three faces is showing. */
+public enum class KeyMode {
+    /** The field, the clipboard offer and the list. */
+    TEXT,
+
+    /** The camera, pointed at another phone. */
+    SCAN,
+
+    /** This phone's own key, drawn for another phone's camera. */
+    HANDOFF,
+}
+
 public data class KeyUiState(
+    val mode: KeyMode = KeyMode.TEXT,
     val text: TextFieldValue = TextFieldValue(""),
     val clipboardLooksLikeKey: Boolean = false,
     @param:StringRes val problem: Int? = null,
@@ -40,6 +53,16 @@ public data class KeyUiState(
     val acceptedCount: Int? = null,
     val busy: Boolean = false,
     val stored: List<StoredKeyView> = emptyList(),
+    /**
+     * The key being handed over, as text, while its code is on screen.
+     *
+     * This is a secret, held here on purpose and only while it is being shown
+     * (docs/SECURITY.md §6). It is cleared the moment the code comes down, and
+     * it is never logged, never persisted and never sent anywhere.
+     */
+    val handoff: String? = null,
+    /** Set when a key is too long to fit in a code, which a subscription can be. */
+    val handoffTooBig: Boolean = false,
 )
 
 /** A stored key as the screen shows it: a name, a technical line, and no secrets. */
@@ -121,6 +144,44 @@ public class KeyViewModel(
         }
     }
 
+    /** Turns on the camera. Nothing is asked of the person before this moment. */
+    public fun scan() {
+        _state.update { it.copy(mode = KeyMode.SCAN, problem = null, acceptedCount = null) }
+    }
+
+    /** A code was read, from the camera or from a picture someone was sent. */
+    public fun onScanned(text: String) {
+        _state.update { it.copy(mode = KeyMode.TEXT, text = TextFieldValue(text), problem = null) }
+        save()
+    }
+
+    /** A picture was chosen but held no code, or none that could be read. */
+    public fun scanFoundNothing() {
+        _state.update { it.copy(mode = KeyMode.TEXT, problem = R.string.key_qr_not_found) }
+    }
+
+    public fun showHandoff(id: String) {
+        viewModelScope.launch {
+            val text = keys.handoffText(id)
+            if (text == null) {
+                _state.update { it.copy(problem = R.string.key_qr_not_found) }
+                return@launch
+            }
+            _state.update {
+                it.copy(
+                    mode = KeyMode.HANDOFF,
+                    handoff = text.takeIf { link -> link.length <= MAX_QR_TEXT },
+                    handoffTooBig = text.length > MAX_QR_TEXT,
+                )
+            }
+        }
+    }
+
+    /** Takes the code down and forgets the secret behind it in the same breath. */
+    public fun closeOverlay() {
+        _state.update { it.copy(mode = KeyMode.TEXT, handoff = null, handoffTooBig = false) }
+    }
+
     public fun forget(id: String) {
         viewModelScope.launch {
             keys.remove(id)
@@ -197,6 +258,12 @@ public class KeyViewModel(
     }
 
     public companion object {
+        /**
+         * What a QR code can hold at correction level Q before it grows too
+         * dense to photograph off a screen. A single link is nowhere near this;
+         * a whole subscription document can be.
+         */
+        private const val MAX_QR_TEXT = 1_600
         private const val TIMEOUT_MS = 12_000
         private const val MAX_DOCUMENT = 256 * 1024
 

@@ -141,6 +141,24 @@ public class KeyRepository(
         AddResult.Added(added.map { it.id }, duplicates = count - added.size)
     }
 
+    /**
+     * The text this key was made from, for handing it to another phone.
+     *
+     * The deliberate exception to the rule that a secret never rises above this
+     * class (CLAUDE.md rule 5). Handing a key over is *the* reason a secret
+     * would ever need to leave, so the exception is one named method rather
+     * than a loophole: the caller asks for one key by id, gets exactly the text
+     * that was pasted, and is expected to forget it as soon as the code is off
+     * the screen. See docs/SECURITY.md §6.
+     *
+     * A remote key hands over its URL instead, which is both smaller and
+     * better: the far phone then keeps itself up to date.
+     */
+    public suspend fun handoffText(id: String): String? = withContext(io) {
+        val stored = locked(write = false) { read() }.keys.firstOrNull { it.id == id } ?: return@withContext null
+        stored.remoteUrl ?: stored.source
+    }
+
     private fun StoredKey.resolve(): AccessKey? {
         val parsed = if (remoteUrl != null) KeyParser.parseRemoteDocument(source) else KeyParser.parse(source)
         return (parsed as? ParseResult.Keys)?.keys?.getOrNull(index)

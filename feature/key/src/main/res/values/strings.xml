@@ -12,4 +12,14 @@
     <string name="key_accepted_many">Принято ключей: %1$d</string>
     <string name="key_fetching">Скачиваю настройки по ссылке…</string>
     <string name="key_fetch_failed">Ссылка сейчас не отвечает. Обычно это временно.</string>
+    <!-- Ключ по наследству: одно устройство показывает, другое смотрит. -->
+    <string name="key_scan">Считать с камеры</string>
+    <string name="key_scan_picture">Найти на картинке</string>
+    <string name="key_handoff">Передать на другой телефон</string>
+    <string name="key_handoff_explain">Наведите камеру другого телефона на эту картинку. Ничего вводить не придётся.</string>
+    <string name="key_handoff_too_big">Этот ключ слишком длинный, чтобы поместиться в картинку. Его придётся переслать текстом.</string>
+    <string name="key_handoff_close">Убрать</string>
+    <string name="key_qr_not_found">Кода на этой картинке нет. Попробуйте другую или вставьте ключ текстом.</string>
+    <string name="key_camera_refused">Без камеры считать код не получится. Можно вставить ключ текстом — это то же самое.</string>
+    <string name="key_camera_back">Вернуться</string>
 </resources>
