@@ -38,6 +38,9 @@ public class TunnelController(private val context: Context) {
 
     private var service: ITunnelService? = null
 
+    /** What the person asked for, remembered across reboots and killings. */
+    private val wish = Wish(context)
+
     /** A check asked for before the binding arrived; binding is asynchronous. */
     private var checkWanted = false
 
@@ -90,6 +93,7 @@ public class TunnelController(private val context: Context) {
     public fun consentIntent(): Intent? = VpnService.prepare(context)
 
     public fun open() {
+        wish.wantsOpen = true
         if (service != null) {
             runCatching { service?.open() }.onSuccess { return }
         }
@@ -98,6 +102,7 @@ public class TunnelController(private val context: Context) {
     }
 
     public fun close() {
+        wish.wantsOpen = false
         runCatching { service?.close() }
             .onFailure { context.startService(intent(ZalesVpnService.ACTION_CLOSE)) }
     }

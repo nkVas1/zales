@@ -12,4 +12,13 @@
     <string name="tunnel_state_stopping">Закрываю</string>
 
     <string name="tunnel_action_close">Закрыть</string>
+    <!-- Плитка в шторке. Те же слова, что на большом экране: приложение не
+         должно говорить о себе двумя разными голосами. -->
+    <string name="tile_name">Залесье</string>
+    <string name="tile_closed">Закрыто</string>
+    <string name="tile_searching">Ищу тропу</string>
+    <string name="tile_open">Открыто</string>
+    <string name="tile_detour">Ищу обход</string>
+    <string name="tile_failed">Не прошли</string>
+    <string name="tile_closing">Закрываю</string>
 </resources>
