@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.nkvas1.zales.common.ZalesLog
+import io.github.nkvas1.zales.design.DitherDissolve
 import io.github.nkvas1.zales.design.ZalesTheme
 import io.github.nkvas1.zales.feature.diagnostics.DiagnosticsScreen
 import io.github.nkvas1.zales.feature.diagnostics.DiagnosticsViewModel
@@ -114,11 +115,15 @@ public class MainActivity : ComponentActivity() {
                     }
                 }
 
-                when (place) {
-                    Place.KEY -> Keys(keyState) { place = it }
-                    Place.CHECK -> Check { place = it }
-                    Place.SETTINGS -> SettingsPlace { place = it }
-                    Place.HOME -> Home(homeState) { place = it }
+                // Screens do not fade into one another here; they dissolve
+                // through the same dither the forest is drawn with.
+                DitherDissolve(place) { where ->
+                    when (where) {
+                        Place.KEY -> Keys(keyState) { place = it }
+                        Place.CHECK -> Check { place = it }
+                        Place.SETTINGS -> SettingsPlace { place = it }
+                        Place.HOME -> Home(homeState) { place = it }
+                    }
                 }
             }
         }
