@@ -31,6 +31,7 @@ import io.github.nkvas1.zales.design.Motion
 import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.component.PlateButton
 import io.github.nkvas1.zales.design.component.ZalesText
+import io.github.nkvas1.zales.design.component.linesHigh
 import io.github.nkvas1.zales.design.switchboard.KnifeSwitch
 import io.github.nkvas1.zales.design.thicket.ThicketState
 import io.github.nkvas1.zales.design.thicket.ThicketSurface
@@ -103,10 +104,17 @@ private fun Panel(
 ) {
     val tunnel = state.tunnel
     // At the largest system font sizes the composed layout no longer fits any
-    // screen, and weights would silently crush the switch instead of the text.
+    // screen, and a weight would silently crush the switch instead of the text.
     // Above that point the panel becomes an ordinary scrolling column: the
     // switch keeps a real size and everything else is simply reachable.
     val roomy = LocalDensity.current.fontScale <= LARGE_TEXT
+
+    // Everything that is not the switch has a height that does not depend on
+    // what is in it. That leaves exactly one flexible slot in the column — the
+    // switch — so the space it gets is the same in every state, and a saying
+    // that runs to two lines instead of one cannot move it by a pixel.
+    val strip = linesHigh(Zales.type.body, lines = MESSAGE_LINES) + ACTION_ROOM
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -122,6 +130,7 @@ private fun Panel(
             text = state.plate,
             style = Zales.type.nameplate,
             color = Zales.colors.rime,
+            maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
@@ -133,16 +142,24 @@ private fun Panel(
             align = TextAlign.End,
         )
 
-        if (roomy) Spacer(Modifier.weight(TOP_WEIGHT)) else Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
-        ZalesText(
-            text = stringResource(Words.stateWord(tunnel)),
-            style = Zales.type.state,
-            color = if (tunnel is TunnelState.Connected) Zales.colors.lamp else Zales.colors.bone,
-            align = TextAlign.Center,
-        )
+        // One line, always, in a slot of its own height. «ТРОПА СУЗИЛАСЬ» is
+        // twice the length of «ОТКРЫТО» and must not push the switch down.
+        Box(
+            modifier = Modifier.fillMaxWidth().height(linesHigh(Zales.type.state, lines = 1)),
+            contentAlignment = Alignment.Center,
+        ) {
+            ZalesText(
+                text = stringResource(Words.stateWord(tunnel)),
+                style = Zales.type.state,
+                color = if (tunnel is TunnelState.Connected) Zales.colors.lamp else Zales.colors.bone,
+                align = TextAlign.Center,
+                maxLines = 1,
+            )
+        }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
 
         KnifeSwitch(
             closed = tunnel.isEngaged,
@@ -152,37 +169,52 @@ private fun Panel(
             energised = current,
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (roomy) Modifier.weight(SWITCH_WEIGHT) else Modifier.height(SWITCH_HEIGHT))
+                .then(if (roomy) Modifier.weight(1f) else Modifier.height(SWITCH_HEIGHT))
                 .sizeIn(minHeight = SWITCH_HEIGHT),
         )
 
-        Guidance(state, onAction)
+        Spacer(Modifier.height(12.dp))
 
-        if (roomy) Spacer(Modifier.weight(BOTTOM_WEIGHT)) else Spacer(Modifier.height(24.dp))
-
-        ZalesText(
-            text = state.saying.orEmpty(),
-            style = Zales.type.caption,
-            color = Zales.colors.rime,
-            align = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // One strip at the foot of the screen, always the same height, holding
+        // whichever of the two things there is to say — never both.
+        Box(modifier = Modifier.fillMaxWidth().height(strip), contentAlignment = Alignment.TopCenter) {
+            Guidance(state, onAction)
+        }
     }
 }
 
 /**
- * The strip under the switch, which is empty almost all of the time.
+ * The strip under the switch, which holds one small sentence at most.
  *
- * Two things can appear here and they can never appear together: what went
- * wrong, or — the first few times only — how the handle is meant to be moved.
+ * Three things can appear here and never two at once: what went wrong, the
+ * first-run request for a key, or — in the quiet — a saying. The order is the
+ * order of importance, and trouble silences the small talk completely.
  */
 @Composable
 private fun Guidance(state: HomeUiState, onAction: (FailureAction) -> Unit) {
     val failure = (state.tunnel as? TunnelState.Failed)?.failure
     when {
         failure != null -> Explanation(failure.code, onAction)
+        // Said before anything is touched rather than after: with no key the
+        // handle cannot move, and a person should never be left pulling at
+        // something that was never going to give.
+        state.needsKey -> Explanation(FailureCode.KEY_05, onAction)
         state.hint -> Hint()
+        else -> Saying(state.saying)
     }
+}
+
+/** The quiet line. Two lines of room, whether it uses them or not. */
+@Composable
+private fun Saying(text: String?) {
+    ZalesText(
+        text = text.orEmpty(),
+        style = Zales.type.caption,
+        color = Zales.colors.rime,
+        align = TextAlign.Center,
+        maxLines = 2,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** Said once and then let go of, the way you would tell someone in person. */
@@ -193,7 +225,7 @@ private fun Hint() {
         style = Zales.type.body,
         color = Zales.colors.rime,
         align = TextAlign.Center,
-        modifier = Modifier.padding(top = 16.dp, start = 24.dp, end = 24.dp),
+        modifier = Modifier.padding(horizontal = 24.dp),
     )
 }
 
@@ -205,7 +237,6 @@ private fun Explanation(code: FailureCode, onAction: (FailureAction) -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(top = 16.dp),
     ) {
         ZalesText(
             text = stringResource(Words.sentence(code)),
@@ -240,11 +271,14 @@ private const val CURRENT_DEGRADED = 0.45f
 
 private val SWITCH_HEIGHT = 220.dp
 
+/** Room for the longest sentence in the taxonomy without the strip growing. */
+private const val MESSAGE_LINES = 3
+
+/** Room under it for one plate button, plus the gap above the button. */
+private val ACTION_ROOM = 68.dp
+
 /** Past this the system font is large enough that a fixed layout stops fitting. */
 private const val LARGE_TEXT = 1.5f
-private const val TOP_WEIGHT = 0.8f
-private const val SWITCH_WEIGHT = 3.2f
-private const val BOTTOM_WEIGHT = 0.6f
 private const val CLEARING_MS = 900
 private const val CURRENT_MS = 600
 

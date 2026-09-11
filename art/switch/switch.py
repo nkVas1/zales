@@ -31,6 +31,7 @@ import zlib
 
 import bmesh
 import bpy
+from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Matrix, Vector
 
 # ── Palette (docs/DESIGN.md §3) ─────────────────────────────────────────────
@@ -51,6 +52,10 @@ LAMP_COLOR = (1.0, 0.72, 0.46)   # warm key: the hut
 RIM_COLOR = (0.40, 0.56, 0.68)   # cold rim: the forest
 
 OPEN_ANGLE_DEG = 105.0
+
+# How much further back the camera goes per unit of lens shift, so that the
+# room the shift borrows from one side is given back on the other.
+SHIFT_ROOM = 2.4
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -689,6 +694,22 @@ def setup_camera(parts: dict, width: int, height: int) -> bpy.types.Object:
     depsgraph = bpy.context.evaluated_depsgraph_get()
     location, _ = cam.camera_fit_coords(depsgraph, coords)
     cam.location = target + (Vector(location) - target) * 1.03
+
+    # The handle sweeps out to one side, so a frame fitted to every pose puts
+    # the panel off-centre in the pose the switch is in almost all of the time.
+    #
+    # Fixed with a lens shift rather than by moving the camera: the shift slides
+    # the frame in image space without changing the angle the object is seen
+    # from, which is the whole character of the render. The camera is then
+    # pulled back to pay for the room the shift borrowed.
+    parts["pivot"].rotation_euler = (0.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    panel = world_to_camera_view(scene, cam, parts["panel"].matrix_world.translation)
+    # Blender measures shift against the longer side of the frame, which here is
+    # the height, so a horizontal shift has to be scaled by the aspect.
+    shift = (panel.x - 0.5) * (width / height)
+    cam_data.shift_x = shift
+    cam.location = target + (cam.location - target) * (1.0 + SHIFT_ROOM * abs(shift))
 
     cam_data.dof.use_dof = True
     cam_data.dof.focus_object = parts["handle"]

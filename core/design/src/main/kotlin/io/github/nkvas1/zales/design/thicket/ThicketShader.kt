@@ -79,26 +79,46 @@ half4 main(float2 fragCoord) {
     float2 mid = forest + float2(uTilt.x * 0.55, 0.0) / uResolution;
     float2 near = forest + float2(uTilt.x, 0.0) / uResolution;
 
-    float f0 = belt(far, 26.0, 3.1, 0.30, 0.010 * breath);
-    float f1 = belt(mid, 15.0, 9.7, 0.46, 0.018 * breath);
-    float f2 = belt(near, 8.0, 17.3, 0.72, 0.026 * breath);
+    // The crowns reach most of the way up the frame. An impassable thicket that
+    // only came up to your knee would be a hedge.
+    float f0 = belt(far, 22.0, 3.1, 0.56, 0.010 * breath);
+    float f1 = belt(mid, 13.0, 9.7, 0.74, 0.018 * breath);
+    float f2 = belt(near, 7.0, 17.3, 0.95, 0.026 * breath);
 
     // Depth: distant belts read thinner and paler, near ones solid.
-    float density = max(max(f0 * 0.34, f1 * 0.62), f2);
+    float density = max(max(f0 * 0.30, f1 * 0.56), f2 * 0.86);
 
-    // Ground mist thickens towards the bottom of the frame.
-    density = max(density, smoothstep(0.28, 0.0, forest.y) * 0.55);
+    // No ground mist. The bottom of the frame carries the small line of text
+    // and the near foreground both, and it earns far more by being the darkest
+    // thing on the screen than by being atmospheric.
 
     // The clearing: a corridor opens down the middle as the path opens, its
     // edges rippling only while traffic is actually moving.
+    // The very bottom of the frame is the near foreground, under the trees and
+    // out of the lamp's reach. It is also where the app says its quiet things,
+    // so it is kept as the darkest band on the screen.
+    density *= smoothstep(0.0, 0.16, forest.y);
+
     float halfWidth = uOpen * (0.30 + 0.02 * sin(uTime * 1.7) * uPulse);
     float edge = abs(uv.x - 0.5);
     float corridor = smoothstep(halfWidth, halfWidth + 0.10, edge);
     density *= corridor;
 
-    // The lamp, upper left, falling off hard. Beyond it there is nothing to see.
-    float reach = distance(uv, float2(0.26, 0.30)) / 0.46;
-    float lamp = exp(-reach * reach * 2.2) * uFlicker;
+    // The lamp hangs over the clearing, behind the switch — that is where the
+    // hut is, and the light has to come from the thing a hand reaches for.
+    //
+    // Two things it must not do. It must not spill over the word at the top,
+    // which is the only text on this screen. And it must never reach full
+    // strength, because at full strength the dither has nothing left to decide
+    // and a pool of light becomes a flat slab of cream. Kept under the top of
+    // the threshold range, it stays grain that thins outward.
+    // Wide and shallow rather than round: light spilling out from behind the
+    // panel, and — just as important — light that stops well above the line of
+    // small text at the foot of the screen. Text over dithered cream is the one
+    // thing on this screen that cannot be read at all.
+    float2 spread = float2(uResolution.x / max(uResolution.y, 1.0), 1.75);
+    float reach = length((uv - float2(0.5, 0.47)) * spread) / 0.26;
+    float lamp = exp(-reach * reach * 2.1) * uFlicker * 0.72;
 
     // The gaze: two faint points far back, never moving, never explained.
     float gaze = 0.0;
@@ -107,13 +127,15 @@ half4 main(float2 fragCoord) {
         gaze = uGaze * exp(-d * d * 9000.0);
     }
 
-    float value = density * 0.85 + lamp * 0.95 + gaze * 0.5;
+    // Added rather than maxed so the lamp still picks out the near trunks, but
+    // both terms are held well under one: this is a night, not a clearing at noon.
+    float value = density * 0.62 + lamp * 0.66 + gaze * 0.5;
     float threshold = bayer8(cell) * 0.92 + 0.04;
 
     if (value <= threshold) {
         return uVoid;
     }
     // Two tones, chosen by what lit the pixel: the hut is warm, the forest cold.
-    return (lamp * 1.4 > density && gaze <= lamp) ? uWarm : uCold;
+    return (lamp > density * 0.55 && gaze <= lamp) ? uWarm : uCold;
 }
 """

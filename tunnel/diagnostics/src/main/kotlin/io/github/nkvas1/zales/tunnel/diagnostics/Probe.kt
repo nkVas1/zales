@@ -75,6 +75,14 @@ public data class Diagnosis(
     public val running: ProbeStep? get() = steps.firstOrNull { it.outcome is StepOutcome.Running }?.step
 
     public companion object {
+        /** There is no key yet, so there is nothing to walk the ladder with. */
+        public fun nothingToCheck(): Diagnosis = Diagnosis(
+            steps = ProbeStep.entries.map { StepResult(it, StepOutcome.Skipped) },
+            verdict = FailureCode.KEY_05,
+            detail = "no key stored",
+            finished = true,
+        )
+
         public fun starting(): Diagnosis = Diagnosis(
             steps = ProbeStep.entries.map { StepResult(it, StepOutcome.Pending) },
             verdict = null,

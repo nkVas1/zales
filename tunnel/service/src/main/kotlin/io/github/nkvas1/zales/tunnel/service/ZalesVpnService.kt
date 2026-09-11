@@ -41,6 +41,7 @@ import io.github.nkvas1.zales.tunnel.autopilot.Uplink
 import io.github.nkvas1.zales.tunnel.autopilot.UplinkProbe
 import io.github.nkvas1.zales.tunnel.autopilot.Verdict
 import io.github.nkvas1.zales.tunnel.autopilot.Watchdog
+import io.github.nkvas1.zales.tunnel.diagnostics.Diagnosis
 import io.github.nkvas1.zales.tunnel.diagnostics.Environment
 import io.github.nkvas1.zales.tunnel.diagnostics.PathCheck
 import io.github.nkvas1.zales.tunnel.diagnostics.Survival
@@ -576,7 +577,13 @@ public class ZalesVpnService : VpnService() {
         checkJob?.cancel()
         val key = activeKey
         checkJob = scope.launch {
-            val subject = key ?: runCatching { keys.activeKey() }.getOrNull() ?: return@launch
+            val subject = key ?: runCatching { keys.activeKey() }.getOrNull()
+            if (subject == null) {
+                // Nothing to check yet. Saying so beats a screen of rungs that
+                // never fill in, which is what silence here would look like.
+                broadcast(DiagnosisStatus.of(Diagnosis.nothingToCheck()))
+                return@launch
+            }
 
             // The core measures ways in from an otherwise idle process and
             // refuses outright while it is itself running one. So the tunnel

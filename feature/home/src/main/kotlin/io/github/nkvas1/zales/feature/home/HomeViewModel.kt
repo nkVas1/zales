@@ -39,6 +39,11 @@ public data class HomeUiState(
     val hint: Boolean = false,
     /** Everything that is not the switch is hidden. */
     val onlyTheSwitch: Boolean = false,
+    /**
+     * Nothing has been pasted yet. The first screen anyone ever sees, and the
+     * one place where the app has to ask for something instead of waiting.
+     */
+    val needsKey: Boolean = false,
 )
 
 /** Something the screen cannot do by itself and must ask an Activity for. */
@@ -84,6 +89,7 @@ public class HomeViewModel(
             pulse = tunnelState.pulse(),
             gaze = gazeValue,
             hint = hintVisible,
+            needsKey = !keyPresent && tunnelState == TunnelState.Idle,
         )
     }.combine(settings.preferences) { screen, preferences ->
         screen.copy(
