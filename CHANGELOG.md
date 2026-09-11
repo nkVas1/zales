@@ -6,6 +6,10 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] — 2026-09-12
+
 ### Added
 
 - **The tunnel.** Xray-core through libXray in its own `:tunnel` process, with
@@ -47,6 +51,9 @@ this project uses [Semantic Versioning](https://semver.org/).
   with. Never a fade.
 - Release builds split by architecture (40 MB instead of 76) and a tag-driven
   release workflow that signs, names and publishes them with checksums.
+- A launcher icon that is the wood itself: three ranks of spruce and a fire's
+  worth of light between the trunks, holding down to 24dp, with a themed layer
+  and the same mark on the notification, the tile and the widget.
 
 ### Changed
 
@@ -63,4 +70,5 @@ this project uses [Semantic Versioning](https://semver.org/).
 - tun2socks removed from the living documents; it had not been in the build for
   some time ([ADR-0002](docs/adr/0002-tun-via-hev.md) superseded).
 
-[Unreleased]: https://github.com/nkVas1/zales/commits/main
+[Unreleased]: https://github.com/nkVas1/zales/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nkVas1/zales/releases/tag/v0.1.0
