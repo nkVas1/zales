@@ -23,28 +23,40 @@ import kotlin.math.roundToInt
 /**
  * The rendered knife switch: one path-traced frame per position of the blade.
  *
- * The frames are decoded once at the size they will actually be drawn, because
- * the source renders are far larger than any phone needs and decoding at full
- * size would cost tens of megabytes for nothing. On Android 8.1 and later they
- * are hardware bitmaps, so they live in graphics memory rather than the heap.
+ * Held at two resolutions on purpose, because the two jobs are different ones.
+ *
+ * The handle is at rest almost all of the time, and that resting frame is the
+ * hero image of the whole app: it wants every pixel it can get. The frames in
+ * between exist for a third of a second while a hand is moving, and at that
+ * speed nobody has ever seen a detail. Keeping the whole sequence at hero
+ * resolution would cost well over a hundred megabytes of graphics memory to
+ * make motion sharper than motion needs to be.
+ *
+ * So: a short run at working size for the throw, and the two resting positions
+ * at full size for all the rest of the time.
  */
 internal class SwitchFrames private constructor(
-    private val frames: List<ImageBitmap>,
+    private val motion: List<ImageBitmap>,
+    private val restingClosed: ImageBitmap,
+    private val restingOpen: ImageBitmap,
     /** The closed switch with current flowing, cross-faded in when the path opens. */
     val energised: ImageBitmap?,
 ) {
-    val closed: ImageBitmap get() = frames.first()
+    val closed: ImageBitmap get() = restingClosed
 
     /** [progress] runs 0 at the closed switch to 1 at the fully open one. */
     fun at(progress: Float): ImageBitmap {
-        val index = (progress.coerceIn(0f, 1f) * (frames.size - 1)).roundToInt()
-        return frames[index]
+        val travel = progress.coerceIn(0f, 1f)
+        if (travel <= SETTLED) return restingClosed
+        if (travel >= 1f - SETTLED) return restingOpen
+        val index = (travel * (motion.size - 1)).roundToInt()
+        return motion[index]
     }
 
     fun recycle() {
         // Hardware bitmaps are freed with their last reference; software ones
         // benefit from going early, and the screen may be left at any moment.
-        (frames + listOfNotNull(energised)).forEach { image ->
+        (motion + listOfNotNull(restingClosed, restingOpen, energised)).forEach { image ->
             runCatching {
                 val bitmap = image.asAndroidBitmap()
                 if (bitmap.config != Bitmap.Config.HARDWARE) bitmap.recycle()
@@ -56,11 +68,27 @@ internal class SwitchFrames private constructor(
         private const val DIRECTORY = "switch"
         private const val ENERGISED = "switch/frame_00_on.webp"
 
+        /** Within this much of either end, the handle counts as at rest. */
+        private const val SETTLED = 0.02f
+
         /**
-         * Decodes every frame in parallel at [targetWidth] pixels.
+         * Enough for a throw lasting about a third of a second. More frames buy
+         * nothing the eye can use and cost graphics memory in proportion.
+         */
+        private const val MOTION_FRAMES = 16
+
+        /** Half the drawn size: these are only ever seen moving. */
+        private const val MOTION_MAX_PX = 440
+        private const val MOTION_MIN_PX = 200
+
+        /** The resting frames are the hero image and get the pixels. */
+        private const val RESTING_MAX_PX = 820
+
+        /**
+         * Decodes what is needed, in parallel, at the two sizes it is needed at.
          *
-         * Called once when the home screen appears; the whole sequence stays
-         * resident so a throw never waits on a decode mid-gesture.
+         * Called once when the home screen appears; everything stays resident so
+         * a throw never waits on a decode mid-gesture.
          */
         suspend fun load(context: Context, targetWidth: Int): SwitchFrames? = coroutineScope {
             val assets = context.assets
@@ -71,15 +99,38 @@ internal class SwitchFrames private constructor(
                 ZalesLog.error(ZalesLog.TAG_UI, "no switch frames in assets/$DIRECTORY")
                 return@coroutineScope null
             }
-            val decoded = names
-                .map { name -> async(Dispatchers.IO) { decode(assets, "$DIRECTORY/$name", targetWidth) } }
+
+            val restingWidth = targetWidth.coerceAtMost(RESTING_MAX_PX)
+            val motionWidth = (targetWidth / 2).coerceIn(MOTION_MIN_PX, MOTION_MAX_PX)
+            val wanted = spread(names, MOTION_FRAMES)
+
+            val motion = wanted
+                .map { name -> async(Dispatchers.IO) { decode(assets, "$DIRECTORY/$name", motionWidth) } }
                 .awaitAll()
                 .filterNotNull()
-            if (decoded.size != names.size) {
-                ZalesLog.warn(ZalesLog.TAG_UI, "decoded ${decoded.size} of ${names.size} switch frames")
+            if (motion.size != wanted.size) {
+                ZalesLog.warn(ZalesLog.TAG_UI, "decoded ${motion.size} of ${wanted.size} switch frames")
             }
-            if (decoded.isEmpty()) return@coroutineScope null
-            SwitchFrames(decoded, decode(assets, ENERGISED, targetWidth))
+            if (motion.isEmpty()) return@coroutineScope null
+
+            val closed = async(Dispatchers.IO) { decode(assets, "$DIRECTORY/${names.first()}", restingWidth) }
+            val open = async(Dispatchers.IO) { decode(assets, "$DIRECTORY/${names.last()}", restingWidth) }
+            val lit = async(Dispatchers.IO) { decode(assets, ENERGISED, restingWidth) }
+
+            SwitchFrames(
+                motion = motion,
+                restingClosed = closed.await() ?: motion.first(),
+                restingOpen = open.await() ?: motion.last(),
+                energised = lit.await(),
+            )
+        }
+
+        /** Picks [count] frames spread evenly across the travel, both ends included. */
+        private fun spread(names: List<String>, count: Int): List<String> {
+            if (names.size <= count) return names
+            return (0 until count).map { step ->
+                names[(step * (names.size - 1) / (count - 1.0)).roundToInt()]
+            }
         }
 
         private fun decode(assets: AssetManager, path: String, targetWidth: Int): ImageBitmap? = runCatching {

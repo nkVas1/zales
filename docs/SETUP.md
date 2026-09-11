@@ -183,3 +183,32 @@ adb shell dumpsys activity service ZalesVpnService
 adb shell settings get global animator_duration_scale    # проверка «уменьшения движения»
 .\gradlew --stop                                          # прибить демон, если закапризничал
 ```
+
+---
+
+## Подпись релиза
+
+Сборка подписывается только там, где есть ключ. Локально он не нужен: релизная
+сборка без него просто выходит неподписанной.
+
+CI берёт ключ из секретов репозитория:
+
+| Секрет | Что это |
+| --- | --- |
+| `ZALES_KEYSTORE_BASE64` | сам keystore, `base64 -w0 zales.jks` |
+| `ZALES_KEYSTORE_PASSWORD` | пароль хранилища |
+| `ZALES_KEY_ALIAS` | имя ключа внутри хранилища |
+| `ZALES_KEY_PASSWORD` | пароль ключа |
+
+Ключ создаётся один раз и **не теряется**: Android не даст обновить приложение,
+подписанное другим ключом, — человеку придётся удалять и ставить заново, теряя
+вставленный ключ доступа.
+
+```powershell
+keytool -genkeypair -v -keystore zales.jks -alias zales `
+  -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Локально ту же подпись можно повторить через переменные окружения
+`ZALES_KEYSTORE`, `ZALES_KEYSTORE_PASSWORD`, `ZALES_KEY_ALIAS`,
+`ZALES_KEY_PASSWORD`.

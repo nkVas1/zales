@@ -204,7 +204,7 @@ private class SwitchFrameLoader {
 }
 
 private const val MIN_FRAME_PX = 240
-private const val MAX_FRAME_PX = 520
+private const val MAX_FRAME_PX = 1080
 
 private const val ACTION_DESCRIPTION = "Рубильник"
 private const val CLOSED_DESCRIPTION = "Поднят, тропа открыта"

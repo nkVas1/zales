@@ -16,6 +16,39 @@ android {
         buildConfig = true
     }
 
+    // Xray-core and its userspace network stack are about 34 MB of compiled Go
+    // per architecture, which is simply what this kind of client costs. Shipping
+    // both in one file would make every download 76 MB for a person who needs
+    // exactly one of them, so the release is split and the universal build is
+    // kept only as a fallback for anyone unsure what their phone is.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = true
+        }
+    }
+
+    // Signing details never live in the repository. CI writes the keystore to a
+    // file and passes the rest through the environment; a local release build
+    // without them simply comes out unsigned, which is the honest outcome.
+    val keystore = System.getenv("ZALES_KEYSTORE")?.let(::file)?.takeIf { it.exists() }
+    if (keystore != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = keystore
+                storePassword = System.getenv("ZALES_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ZALES_KEY_ALIAS")
+                keyPassword = System.getenv("ZALES_KEY_PASSWORD")
+                enableV1Signing = false
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = false
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // A debug build installs alongside the release one, so a broken
@@ -24,6 +57,7 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
+            if (keystore != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

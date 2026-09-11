@@ -1,0 +1,118 @@
+name: release
+
+# Cutting a release is one push of a tag. Everything else — building the Go
+# core, signing, naming the files the way docs/INSTALL.md promises, writing the
+# release page — happens here, so that no two releases are built differently.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build (must already exist)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install pinned Android SDK packages
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Cache the native core
+        id: native-core
+        uses: actions/cache@v4
+        with:
+          path: native/prebuilt
+          key: zales-core-${{ runner.os }}-${{ hashFiles('native/core/**', 'native/build_core.py') }}
+
+      - name: Set up Go
+        if: steps.native-core.outputs.cache-hit != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: native/core/go.mod
+          cache-dependency-path: native/core/go.sum
+
+      - name: Build the native core
+        if: steps.native-core.outputs.cache-hit != 'true'
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          PATH="$(go env GOPATH)/bin:$PATH" python3 native/build_core.py
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+
+      # The gates run again on the exact commit being released. A tag that
+      # cannot pass them is not a release.
+      - name: Gates
+        run: ./gradlew detekt lint test --no-daemon
+
+      - name: Write the signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ZALES_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ZALES_KEYSTORE_BASE64 is not set; a release must be signed"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/zales.jks"
+
+      - name: Assemble release
+        env:
+          ZALES_KEYSTORE: ${{ runner.temp }}/zales.jks
+          ZALES_KEYSTORE_PASSWORD: ${{ secrets.ZALES_KEYSTORE_PASSWORD }}
+          ZALES_KEY_ALIAS: ${{ secrets.ZALES_KEY_ALIAS }}
+          ZALES_KEY_PASSWORD: ${{ secrets.ZALES_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      # Named exactly as docs/INSTALL.md tells people to look for, because that
+      # page is read by someone who is already unsure.
+      - name: Name the files
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-arm64-v8a-release.apk "out/zales-arm64-$version.apk"
+          cp app/build/outputs/apk/release/app-armeabi-v7a-release.apk "out/zales-arm32-$version.apk"
+          cp app/build/outputs/apk/release/app-universal-release.apk "out/zales-universal-$version.apk"
+          ( cd out && sha256sum *.apk > checksums.txt )
+          cat out/checksums.txt
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          body: |
+            **Какой файл скачивать.** Почти любому телефону подходит
+            `zales-arm64-*.apk`. Если не уверены — берите `zales-universal-*.apk`:
+            он подойдёт всем, просто весит больше.
+
+            Пошаговая установка — [docs/INSTALL.md](https://github.com/nkVas1/zales/blob/main/docs/INSTALL.md).
+
+      - name: Remove the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/zales.jks"
