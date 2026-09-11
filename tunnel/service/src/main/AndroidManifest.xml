@@ -43,6 +43,18 @@
                 android:value="false" />
         </service>
 
+        <!-- A plate on the home screen for people who never open app drawers. -->
+        <receiver
+            android:name=".ZalesWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
         <receiver
             android:name=".BootReceiver"
             android:directBootAware="false"

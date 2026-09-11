@@ -570,6 +570,7 @@ public class ZalesVpnService : VpnService() {
     private fun update(next: TunnelState) {
         state.value = next
         notification.update(next)
+        ZalesWidget.refresh(this, next)
         val status = TunnelStatus.of(next)
         val count = listeners.beginBroadcast()
         repeat(count) { index ->

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From Android 12 the launcher can size a widget in cells and preview the
+     real layout rather than a screenshot, so it does both. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_plate"
+    android:minHeight="40dp"
+    android:minWidth="180dp"
+    android:previewLayout="@layout/widget_plate"
+    android:resizeMode="horizontal"
+    android:targetCellHeight="1"
+    android:targetCellWidth="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />
