@@ -26,6 +26,9 @@ internal fun Project.configureKotlinAndroid(extension: CommonExtension) {
     extension.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
     extension.compileOptions.targetCompatibility = JavaVersion.VERSION_17
 
+    // Unit tests run on a bare JVM, where android.util.Log throws by default.
+    extension.testOptions.unitTests.isReturnDefaultValues = true
+
     extension.lint.warningsAsErrors = true
     extension.lint.abortOnError = true
     // AGP 9 always generates the lint reports; build/reports/lint has them.

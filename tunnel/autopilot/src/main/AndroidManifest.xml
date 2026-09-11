@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The only thing the autopilot asks of the system: which network we are on.
+     Deliberately not ACCESS_FINE_LOCATION, which reading a Wi-Fi name would
+     cost — see NetworkFingerprinter. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>

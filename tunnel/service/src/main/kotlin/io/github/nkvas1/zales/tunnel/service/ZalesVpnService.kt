@@ -18,15 +18,24 @@ import io.github.nkvas1.zales.model.AccessKey
 import io.github.nkvas1.zales.storage.KeyRepository
 import io.github.nkvas1.zales.storage.KeystoreBlobCipher
 import io.github.nkvas1.zales.storage.StorageUnavailableException
+import io.github.nkvas1.zales.tunnel.api.DegradeReason
 import io.github.nkvas1.zales.tunnel.api.EngineResult
 import io.github.nkvas1.zales.tunnel.api.FailureCode
 import io.github.nkvas1.zales.tunnel.api.RoutingPolicy
 import io.github.nkvas1.zales.tunnel.api.StrategyId
-import io.github.nkvas1.zales.tunnel.api.Tactics
 import io.github.nkvas1.zales.tunnel.api.Traffic
 import io.github.nkvas1.zales.tunnel.api.TunSettings
 import io.github.nkvas1.zales.tunnel.api.TunnelFailure
 import io.github.nkvas1.zales.tunnel.api.TunnelState
+import io.github.nkvas1.zales.tunnel.autopilot.AddressResolver
+import io.github.nkvas1.zales.tunnel.autopilot.Autopilot
+import io.github.nkvas1.zales.tunnel.autopilot.Choice
+import io.github.nkvas1.zales.tunnel.autopilot.NetworkFingerprint
+import io.github.nkvas1.zales.tunnel.autopilot.NetworkFingerprinter
+import io.github.nkvas1.zales.tunnel.autopilot.StoredNetworkProfiles
+import io.github.nkvas1.zales.tunnel.autopilot.TrafficSample
+import io.github.nkvas1.zales.tunnel.autopilot.Verdict
+import io.github.nkvas1.zales.tunnel.autopilot.Watchdog
 import io.github.nkvas1.zales.tunnel.xray.XrayConfigBuilder
 import io.github.nkvas1.zales.tunnel.xray.engine.XrayEngine
 import kotlinx.coroutines.CoroutineScope
@@ -35,11 +44,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.InetAddress
 
 /**
  * The tunnel itself. Lives alone in the `:tunnel` process (ADR-0004), so a
@@ -56,13 +68,23 @@ public class ZalesVpnService : VpnService() {
     private val engine = XrayEngine()
     private val state = MutableStateFlow<TunnelState>(TunnelState.Idle)
     private val listeners = RemoteCallbackList<ITunnelCallback>()
+    private val watchdog = Watchdog()
 
     private lateinit var notification: TunnelNotification
     private lateinit var keys: KeyRepository
+    private lateinit var autopilot: Autopilot
+    private lateinit var fingerprinter: NetworkFingerprinter
+    private lateinit var profiles: StoredNetworkProfiles
 
     private var tun: ParcelFileDescriptor? = null
     private var trafficJob: Job? = null
     private var trafficBase = Traffic.Zero
+
+    /** Held so the watchdog can start another race without waking the key store. */
+    private var activeKey: AccessKey? = null
+    private var activeNetwork: NetworkFingerprint = NetworkFingerprint.Unknown
+    private var resolved: Pair<String, String>? = null
+    private var attempt = 1
 
     private val binder = object : ITunnelService.Stub() {
         override fun register(callback: ITunnelCallback): TunnelStatus {
@@ -84,6 +106,9 @@ public class ZalesVpnService : VpnService() {
         notification = TunnelNotification(this)
         notification.createChannel()
         keys = KeyRepository(File(noBackupFilesDir, KEY_STORE_FILE), KeystoreBlobCipher())
+        fingerprinter = NetworkFingerprinter(this)
+        profiles = StoredNetworkProfiles(this)
+        autopilot = Autopilot(engine = engine, profiles = profiles, resolver = cachingResolver())
         ZalesLog.info(ZalesLog.TAG_TUNNEL, "tunnel process started")
     }
 
@@ -119,35 +144,73 @@ public class ZalesVpnService : VpnService() {
             update(TunnelState.Preparing)
 
             val key = loadKey() ?: return@launch
-            val tactics = Tactics.Baseline
-            val routing = RoutingPolicy()
+            activeKey = key
+            activeNetwork = fingerprinter.current()
+            attempt = 1
+            resolved = null
 
-            // Prove the server answers before touching the interface: a tunnel
-            // that comes up and silently goes nowhere is the worst outcome.
-            update(TunnelState.Probing(attempt = 1, strategy = tactics.id))
-            val reach = engine.probe(listOf(XrayConfigBuilder.forProbe(key, tactics)), PROBE_URL, PROBE_TIMEOUT_MS)
-                .firstOrNull()
-            if (reach == null || !reach.success) {
-                fail(FailureCode.SRV_03, reach?.error ?: "probe produced no result")
-                return@launch
+            // Nothing touches the interface until a real request has come back
+            // through the proxy: a tunnel that opens and silently goes nowhere
+            // is the worst outcome of all.
+            update(TunnelState.Probing(attempt = attempt, strategy = null))
+            when (val choice = autopilot.choose(key, activeNetwork)) {
+                is Choice.None -> fail(FailureCode.SRV_03, choice.detail)
+                is Choice.Found -> engage(key, choice)
             }
+        }
+    }
 
-            val descriptor = establish(routing)
-            if (descriptor == null) {
-                fail(FailureCode.SYS_01, "VpnService.establish returned null")
-                return@launch
+    /**
+     * Raises the interface and hands its descriptor to the core.
+     *
+     * The descriptor deliberately outlives a restart of the core: when the
+     * watchdog swaps strategies underneath, the person's open connections and
+     * the system's VPN indicator both survive the change.
+     */
+    private suspend fun engage(key: AccessKey, choice: Choice.Found) {
+        val routing = RoutingPolicy()
+        val descriptor = tun ?: establish(routing)
+        if (descriptor == null) {
+            fail(FailureCode.SYS_01, "VpnService.establish returned null")
+            return
+        }
+        tun = descriptor
+
+        engine.setProtector { fd -> protect(fd) }
+        val config = XrayConfigBuilder.forTunnel(key, choice.tactics, routing, TunSettings())
+        when (val started = engine.start(config, descriptor.fd)) {
+            is EngineResult.Ok -> connected(choice.tactics.id, choice.latencyMs)
+            is EngineResult.Error -> {
+                closeDescriptor()
+                val code = if (started.nativeUnavailable) FailureCode.INT_02 else FailureCode.INT_01
+                fail(code, started.message)
             }
-            tun = descriptor
+        }
+    }
 
-            engine.setProtector { fd -> protect(fd) }
-            val config = XrayConfigBuilder.forTunnel(key, tactics, routing, TunSettings())
-            when (val started = engine.start(config, descriptor.fd)) {
-                is EngineResult.Ok -> connected(tactics.id, reach.delayMs.toInt())
-                is EngineResult.Error -> {
-                    closeDescriptor()
-                    val code = if (started.nativeUnavailable) FailureCode.INT_02 else FailureCode.INT_01
-                    fail(code, started.message)
-                }
+    /**
+     * The path went quiet in the way Russian filtering makes a path go quiet.
+     * Forget what used to work here, find another way in, and swap the core
+     * over underneath the interface without ever dropping it.
+     */
+    private suspend fun relearn(reason: DegradeReason) {
+        val key = activeKey ?: return
+        val strategy = (state.value as? TunnelState.Connected)?.strategy ?: return
+        update(TunnelState.Degraded(System.currentTimeMillis(), strategy, reason, currentDelta()))
+
+        // A strategy is only discredited on the network it was chosen for. If
+        // the phone has meanwhile moved to another network, that strategy may
+        // still be the right one to come back to.
+        val here = fingerprinter.current()
+        if (here == activeNetwork) profiles.forget(activeNetwork) else activeNetwork = here
+
+        attempt++
+        update(TunnelState.Reconnecting(attempt))
+        when (val choice = autopilot.choose(key, activeNetwork)) {
+            is Choice.None -> fail(FailureCode.DPI_01, choice.detail)
+            is Choice.Found -> {
+                engine.stop()
+                engage(key, choice)
             }
         }
     }
@@ -203,6 +266,7 @@ public class ZalesVpnService : VpnService() {
 
     private fun connected(strategy: StrategyId, latencyMs: Int) {
         trafficBase = currentTraffic()
+        watchdog.reset()
         update(
             TunnelState.Connected(
                 sinceEpochMs = System.currentTimeMillis(),
@@ -212,19 +276,26 @@ public class ZalesVpnService : VpnService() {
             ),
         )
         trafficJob?.cancel()
-        trafficJob = scope.launch {
-            while (isActive) {
-                delay(TRAFFIC_POLL_MS)
-                val connected = state.value as? TunnelState.Connected ?: continue
-                val now = currentTraffic()
-                update(
-                    connected.copy(
-                        traffic = Traffic(
-                            uploadedBytes = (now.uploadedBytes - trafficBase.uploadedBytes).coerceAtLeast(0),
-                            downloadedBytes = (now.downloadedBytes - trafficBase.downloadedBytes).coerceAtLeast(0),
-                        ),
-                    ),
-                )
+        trafficJob = scope.launch { keepWatch() }
+    }
+
+    /** Publishes the counters and, more importantly, notices when they stop moving. */
+    private suspend fun keepWatch() {
+        while (currentCoroutineContext().isActive) {
+            delay(TRAFFIC_POLL_MS)
+            val delta = currentDelta()
+            (state.value as? TunnelState.Connected)?.let { update(it.copy(traffic = delta)) }
+
+            val sample = TrafficSample(delta.uploadedBytes, delta.downloadedBytes, System.currentTimeMillis())
+            when (watchdog.observe(sample)) {
+                // Suspicion alone is not worth telling anyone about: a slow page
+                // looks exactly like this for a second or two.
+                Verdict.HEALTHY, Verdict.SUSPICIOUS -> Unit
+                Verdict.STALLED -> {
+                    ZalesLog.warn(ZalesLog.TAG_TUNNEL, "traffic frozen, looking for another way through")
+                    relearn(DegradeReason.STALLED)
+                    return
+                }
             }
         }
     }
@@ -239,6 +310,29 @@ public class ZalesVpnService : VpnService() {
         val up = TrafficStats.getUidTxBytes(uid).takeIf { it != TrafficStats.UNSUPPORTED.toLong() } ?: 0
         val down = TrafficStats.getUidRxBytes(uid).takeIf { it != TrafficStats.UNSUPPORTED.toLong() } ?: 0
         return Traffic(up, down)
+    }
+
+    private fun currentDelta(): Traffic {
+        val now = currentTraffic()
+        return Traffic(
+            uploadedBytes = (now.uploadedBytes - trafficBase.uploadedBytes).coerceAtLeast(0),
+            downloadedBytes = (now.downloadedBytes - trafficBase.downloadedBytes).coerceAtLeast(0),
+        )
+    }
+
+    /**
+     * Resolves the server's address once per session, outside the tunnel.
+     *
+     * Asking again while the path is frozen would simply hang, so the answer
+     * from the first, healthy attempt is the one that is kept and reused by
+     * every later race.
+     */
+    private fun cachingResolver(): AddressResolver = AddressResolver { host ->
+        resolved?.takeIf { it.first == host }?.second ?: withContext(Dispatchers.IO) {
+            runCatching { InetAddress.getAllByName(host).firstOrNull()?.hostAddress }
+                .getOrNull()
+                ?.also { resolved = host to it }
+        }
     }
 
     private suspend fun fail(code: FailureCode, detail: String) {
@@ -295,9 +389,6 @@ public class ZalesVpnService : VpnService() {
         private const val TUN_IPV6_PREFIX = 126
         private const val TUN_DNS = "10.16.0.1"
 
-        /** Answers 204 with an empty body, so a probe measures the path and nothing else. */
-        private const val PROBE_URL = "https://cp.cloudflare.com/generate_204"
-        private const val PROBE_TIMEOUT_MS = 8_000
         private const val TRAFFIC_POLL_MS = 2_000L
     }
 }

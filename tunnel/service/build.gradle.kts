@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:storage"))
     implementation(project(":parsing"))
+    implementation(project(":tunnel:autopilot"))
     implementation(project(":tunnel:engine-xray"))
     implementation(project(":tunnel:xray-config"))
     implementation(libs.kotlinx.coroutines.android)
