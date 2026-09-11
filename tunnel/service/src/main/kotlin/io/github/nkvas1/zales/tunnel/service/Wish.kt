@@ -24,8 +24,21 @@ public class Wish(context: Context) {
             preferences.edit().putBoolean(KEY, value).apply()
         }
 
+    /**
+     * Whether Russian sites go around the tunnel.
+     *
+     * Kept beside the wish because it is the same kind of thing: a decision the
+     * person made, which has to outlive the process that was told about it.
+     */
+    public var bypassDomestic: Boolean
+        get() = preferences.getBoolean(BYPASS, true)
+        set(value) {
+            preferences.edit().putBoolean(BYPASS, value).apply()
+        }
+
     private companion object {
         const val FILE = "zales.wish"
         const val KEY = "wants_open"
+        const val BYPASS = "bypass_domestic"
     }
 }

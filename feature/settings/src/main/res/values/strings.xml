@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Настройки. Их мало намеренно: каждая здесь потому, что живой человек
+    попросил бы её вслух (docs/DESIGN.md §11).
+-->
+<resources>
+
+    <string name="settings_title">НАСТРОЙКИ</string>
+    <string name="settings_back">Назад к рубильнику</string>
+
+    <string name="settings_only_switch">Только рубильник</string>
+    <string name="settings_only_switch_explain">Убрать с экрана всё, кроме рубильника. Ключ останется на месте, но случайно его уже не удалить.</string>
+
+    <string name="settings_sayings">Приговорки</string>
+    <string name="settings_sayings_explain">Короткие живые фразы мелким шрифтом в тихие минуты. В трудную минуту их не бывает.</string>
+
+    <string name="settings_bypass">Российские сайты мимо тропы</string>
+    <string name="settings_bypass_explain">Банки и госуслуги часто не пускают, если заходить издалека. Так они видят обычный домашний адрес.</string>
+
+    <string name="settings_updates">Проверять обновления</string>
+    <string name="settings_updates_explain">Раз в день спрашивать у GitHub, не вышла ли новая сборка. Ничего о вас при этом не передаётся.</string>
+
+    <string name="settings_always_on">Держать тропу всегда открытой</string>
+    <string name="settings_always_on_explain">Android умеет включать тропу сам и не выпускать ничего мимо неё. Настраивается один раз в системных настройках — покажу, где.</string>
+    <string name="settings_always_on_go">Открыть системные настройки</string>
+
+    <string name="settings_check_path">Проверить тропу</string>
+    <string name="settings_check_path_explain">Пройти по шагам и посмотреть, где спотыкаемся. Пригодится, если что-то работает не так.</string>
+
+    <string name="settings_update_look">Проверить сейчас</string>
+    <string name="settings_update_looking">Спрашиваю…</string>
+    <string name="settings_update_current">У вас последняя сборка.</string>
+    <string name="settings_update_newer">Вышла версия %1$s. Можно обновиться.</string>
+    <string name="settings_update_open">Открыть страницу загрузки</string>
+    <string name="settings_update_unreachable">Не смог спросить — похоже, сейчас нет связи с GitHub.</string>
+
+    <string name="settings_version">Залесье %1$s</string>
+    <string name="settings_source">Исходный код открыт: github.com/nkVas1/zales</string>
+
+</resources>

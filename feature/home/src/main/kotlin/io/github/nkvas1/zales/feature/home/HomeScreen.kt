@@ -6,6 +6,7 @@ package io.github.nkvas1.zales.feature.home
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ public fun HomeScreen(
     onToggle: (Boolean) -> Unit,
     onAction: (FailureAction) -> Unit,
     onHint: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val tunnel = state.tunnel
@@ -78,7 +80,7 @@ public fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
         )
 
-        Panel(state, current, onToggle, onAction, onHint)
+        Panel(state, current, onToggle, onAction, onHint, onOpenSettings)
     }
 }
 
@@ -90,6 +92,7 @@ private fun Panel(
     onToggle: (Boolean) -> Unit,
     onAction: (FailureAction) -> Unit,
     onHint: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val tunnel = state.tunnel
     Column(
@@ -99,11 +102,21 @@ private fun Panel(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // The engraved plate in the corner is also the way into the settings.
+        // Small, out of the way, and the only door there is — which is exactly
+        // right for a screen that must not offer anyone a decision.
         ZalesText(
             text = state.plate,
             style = Zales.type.nameplate,
             color = Zales.colors.rime,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = null,
+                    indication = null,
+                    onClickLabel = SETTINGS_LABEL,
+                    onClick = onOpenSettings,
+                ),
             align = TextAlign.End,
         )
 
@@ -217,3 +230,5 @@ private const val SWITCH_WEIGHT = 3.2f
 private const val BOTTOM_WEIGHT = 0.6f
 private const val CLEARING_MS = 900
 private const val CURRENT_MS = 600
+
+private const val SETTINGS_LABEL = "Настройки"

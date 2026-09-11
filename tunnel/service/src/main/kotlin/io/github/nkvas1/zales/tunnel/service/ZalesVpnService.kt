@@ -87,6 +87,7 @@ public class ZalesVpnService : VpnService() {
     private lateinit var uplink: UplinkProbe
     private lateinit var profiles: StoredNetworkProfiles
     private lateinit var survival: Survival
+    private lateinit var wish: Wish
     private lateinit var pathCheck: PathCheck
 
     private var tun: ParcelFileDescriptor? = null
@@ -100,6 +101,9 @@ public class ZalesVpnService : VpnService() {
     private var activeNetwork: NetworkFingerprint = NetworkFingerprint.Unknown
     private var resolved: Pair<String, String>? = null
     private var attempt = 1
+
+    /** The way in that is working, kept so routing can change without a new race. */
+    private var activeChoice: Choice.Found? = null
 
     /** Races since the tunnel last made progress; the give-up budget counts these. */
     private var races = 0
@@ -128,6 +132,10 @@ public class ZalesVpnService : VpnService() {
         override fun cancelDiagnosis() {
             checkJob?.cancel()
         }
+
+        override fun setBypassDomestic(value: Boolean) {
+            scope.launch { changeRouting(value) }
+        }
     }
 
     override fun onCreate() {
@@ -140,6 +148,7 @@ public class ZalesVpnService : VpnService() {
         profiles = StoredNetworkProfiles(this)
         autopilot = Autopilot(engine = engine, profiles = profiles, resolver = cachingResolver())
         survival = Survival(this)
+        wish = Wish(this)
         survival.openLedger()
         pathCheck = PathCheck(
             engine = engine,
@@ -242,7 +251,8 @@ public class ZalesVpnService : VpnService() {
      * the system's VPN indicator both survive the change.
      */
     private suspend fun engage(key: AccessKey, choice: Choice.Found) {
-        val routing = RoutingPolicy()
+        activeChoice = choice
+        val routing = routing()
         val descriptor = tun ?: establish(routing)
         if (descriptor == null) {
             fail(FailureCode.SYS_01, "VpnService.establish returned null")
@@ -308,6 +318,27 @@ public class ZalesVpnService : VpnService() {
             }
             delay(backoff.nextDelayMs())
         }
+    }
+
+    private fun routing(): RoutingPolicy = RoutingPolicy(bypassDomestic = wish.bypassDomestic)
+
+    /**
+     * Changes how traffic is split and puts the change into effect at once.
+     *
+     * The core is restarted with the same way in rather than raced again: the
+     * strategy that got through is still the strategy that gets through, and
+     * the interface never comes down, so nothing the person has open notices.
+     */
+    private suspend fun changeRouting(bypassDomestic: Boolean) {
+        if (wish.bypassDomestic == bypassDomestic) return
+        wish.bypassDomestic = bypassDomestic
+        val key = activeKey ?: return
+        val choice = activeChoice ?: return
+        if (state.value !is TunnelState.Connected && state.value !is TunnelState.Degraded) return
+        ZalesLog.info(ZalesLog.TAG_TUNNEL, "routing changed, restarting the core under the interface")
+        trafficJob?.cancel()
+        engine.stop()
+        engage(key, choice)
     }
 
     private fun close() {

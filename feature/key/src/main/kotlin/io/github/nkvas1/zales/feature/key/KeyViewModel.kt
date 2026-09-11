@@ -63,6 +63,8 @@ public data class KeyUiState(
     val handoff: String? = null,
     /** Set when a key is too long to fit in a code, which a subscription can be. */
     val handoffTooBig: Boolean = false,
+    /** Calm mode: the key is shown and handed over, but never deleted by accident. */
+    val guarded: Boolean = false,
 )
 
 /** A stored key as the screen shows it: a name, a technical line, and no secrets. */
@@ -104,6 +106,11 @@ public class KeyViewModel(
 
     init {
         refresh()
+    }
+
+    /** Calm mode is set from outside; the view model does not read preferences itself. */
+    public fun setGuarded(guarded: Boolean) {
+        _state.update { it.copy(guarded = guarded) }
     }
 
     public fun refresh() {

@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.nkvas1.zales.common.ZalesLog
 import io.github.nkvas1.zales.design.ZalesTheme
@@ -41,10 +42,13 @@ import io.github.nkvas1.zales.feature.key.KeyScreen
 import io.github.nkvas1.zales.feature.key.KeyUiState
 import io.github.nkvas1.zales.feature.key.KeyViewModel
 import io.github.nkvas1.zales.feature.key.Qr
+import io.github.nkvas1.zales.feature.settings.SettingsScreen
+import io.github.nkvas1.zales.feature.settings.SettingsViewModel
+import io.github.nkvas1.zales.feature.settings.UpdateCheck
 import io.github.nkvas1.zales.words.FailureAction
 
 /** Where in the app we are. Three places, and no navigation library to say so. */
-private enum class Place { HOME, KEY, CHECK }
+private enum class Place { HOME, KEY, CHECK, SETTINGS }
 
 /**
  * The single window. Three places to be: the switch, the key, and the check.
@@ -59,6 +63,7 @@ public class MainActivity : ComponentActivity() {
             container.keys,
             container.voice,
             BuildConfig.VERSION_NAME,
+            container.settings,
             container.hints,
         )
     }
@@ -67,6 +72,13 @@ public class MainActivity : ComponentActivity() {
     }
     private val check: DiagnosticsViewModel by viewModels {
         DiagnosticsViewModel.factory(container.tunnel, ReportWriter(applicationContext))
+    }
+    private val preferences: SettingsViewModel by viewModels {
+        SettingsViewModel.factory(
+            container.settings,
+            container.tunnel,
+            UpdateCheck(BuildConfig.VERSION_NAME),
+        )
     }
 
     private val consent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -105,6 +117,7 @@ public class MainActivity : ComponentActivity() {
                 when (place) {
                     Place.KEY -> Keys(keyState) { place = it }
                     Place.CHECK -> Check { place = it }
+                    Place.SETTINGS -> SettingsPlace { place = it }
                     Place.HOME -> Home(homeState) { place = it }
                 }
             }
@@ -123,11 +136,38 @@ public class MainActivity : ComponentActivity() {
                 }
             },
             onHint = home::hint,
+            onOpenSettings = { go(Place.SETTINGS) },
         )
     }
 
     @Composable
+    private fun SettingsPlace(go: (Place) -> Unit) {
+        val current by preferences.preferences.collectAsStateWithLifecycle()
+        val update by preferences.update.collectAsStateWithLifecycle()
+        SettingsScreen(
+            preferences = current,
+            update = update,
+            version = BuildConfig.VERSION_NAME,
+            onChange = preferences::apply,
+            onCheckUpdate = preferences::checkForUpdate,
+            onOpenDownloads = ::browse,
+            onAlwaysOn = { open(Settings.ACTION_VPN_SETTINGS) },
+            onCheckPath = {
+                check.start()
+                go(Place.CHECK)
+            },
+            onLeave = { go(Place.HOME) },
+        )
+        BackHandler { go(Place.HOME) }
+    }
+
+    @Composable
     private fun Keys(state: KeyUiState, go: (Place) -> Unit) {
+        // Calm mode reaches the key screen as one thing only: the key cannot be
+        // deleted by a wandering finger.
+        val guarded by preferences.preferences.collectAsStateWithLifecycle()
+        LaunchedEffect(guarded.onlyTheSwitch) { key.setGuarded(guarded.onlyTheSwitch) }
+
         // A key is most often a screenshot in a messenger, so reading one out
         // of the gallery matters at least as much as the camera does.
         val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -232,6 +272,12 @@ public class MainActivity : ComponentActivity() {
             FailureAction.SendReport, FailureAction.ShowDetails -> go(Place.CHECK)
             FailureAction.OpenDownloads -> open(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         }
+    }
+
+    private fun browse(url: String) {
+        runCatching {
+            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }.onFailure { ZalesLog.warn(ZalesLog.TAG_UI, "no browser for the downloads page", it) }
     }
 
     private fun open(action: String) {

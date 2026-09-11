@@ -6,6 +6,7 @@ package io.github.nkvas1.zales
 
 import android.content.Context
 import io.github.nkvas1.zales.feature.home.HintMemory
+import io.github.nkvas1.zales.settings.ZalesSettings
 import io.github.nkvas1.zales.storage.KeyRepository
 import io.github.nkvas1.zales.storage.KeystoreBlobCipher
 import io.github.nkvas1.zales.tunnel.service.TunnelController
@@ -33,6 +34,8 @@ public class ZalesContainer(context: Context) {
     )
 
     public val voice: SayingVoice = SayingVoice.fromAssets(application)
+
+    public val settings: ZalesSettings = ZalesSettings(application)
 
     internal val hints: HintMemory = StoredHintMemory(application)
 

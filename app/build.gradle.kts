@@ -40,9 +40,11 @@ dependencies {
     implementation(project(":core:storage"))
     implementation(project(":core:voice"))
     implementation(project(":core:words"))
+    implementation(project(":core:settings"))
     implementation(project(":feature:diagnostics"))
     implementation(project(":feature:home"))
     implementation(project(":feature:key"))
+    implementation(project(":feature:settings"))
     implementation(project(":tunnel:api"))
     implementation(project(":tunnel:service"))
 

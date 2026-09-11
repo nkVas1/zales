@@ -25,4 +25,11 @@ interface ITunnelService {
     void diagnose();
 
     void cancelDiagnosis();
+
+    /**
+     * Whether Russian sites go around the tunnel. Pushed across rather than
+     * shared through a file: preferences shared between processes have never
+     * been reliable on Android.
+     */
+    void setBypassDomestic(boolean value);
 }

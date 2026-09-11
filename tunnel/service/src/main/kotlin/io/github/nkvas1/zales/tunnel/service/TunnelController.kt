@@ -129,6 +129,19 @@ public class TunnelController(private val context: Context) {
             .onFailure { ZalesLog.warn(ZalesLog.TAG_UI, "could not start the path check", it) }
     }
 
+    /**
+     * Tells the tunnel how to split traffic.
+     *
+     * Remembered on this side too, so that the setting is right on the screen
+     * even when nothing is bound — which is most of the time.
+     */
+    public fun setBypassDomestic(value: Boolean) {
+        wish.bypassDomestic = value
+        runCatching { service?.setBypassDomestic(value) }
+    }
+
+    public fun bypassDomestic(): Boolean = wish.bypassDomestic
+
     public fun forgetDiagnosis() {
         checkWanted = false
         runCatching { service?.cancelDiagnosis() }

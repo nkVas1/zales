@@ -175,6 +175,7 @@ private fun Paperwork(
             state.stored.forEach { key ->
                 StoredKeyRow(
                     key = key,
+                    guarded = state.guarded,
                     onForget = { onForget(key.id) },
                     onHandoff = { onHandoff(key.id) },
                 )
@@ -212,7 +213,12 @@ private fun SaveOutcome(state: KeyUiState) {
 }
 
 @Composable
-private fun StoredKeyRow(key: StoredKeyView, onForget: () -> Unit, onHandoff: () -> Unit) {
+private fun StoredKeyRow(
+    key: StoredKeyView,
+    guarded: Boolean,
+    onForget: () -> Unit,
+    onHandoff: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -231,7 +237,9 @@ private fun StoredKeyRow(key: StoredKeyView, onForget: () -> Unit, onHandoff: ()
             )
         }
         PlateButton(text = stringResource(R.string.key_handoff), onClick = onHandoff)
-        PlateButton(text = stringResource(R.string.key_forget), onClick = onForget)
+        if (!guarded) {
+            PlateButton(text = stringResource(R.string.key_forget), onClick = onForget)
+        }
     }
 }
 

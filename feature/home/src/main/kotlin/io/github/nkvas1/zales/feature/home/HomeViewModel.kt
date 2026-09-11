@@ -7,6 +7,7 @@ package io.github.nkvas1.zales.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import io.github.nkvas1.zales.settings.ZalesSettings
 import io.github.nkvas1.zales.storage.KeyRepository
 import io.github.nkvas1.zales.tunnel.api.TunnelState
 import io.github.nkvas1.zales.tunnel.service.TunnelController
@@ -36,6 +37,8 @@ public data class HomeUiState(
     val gaze: Float = 0f,
     /** The one sentence of teaching, while it is on screen. */
     val hint: Boolean = false,
+    /** Everything that is not the switch is hidden. */
+    val onlyTheSwitch: Boolean = false,
 )
 
 /** Something the screen cannot do by itself and must ask an Activity for. */
@@ -51,6 +54,7 @@ public class HomeViewModel(
     private val keys: KeyRepository,
     voice: SayingVoice,
     private val versionName: String,
+    private val settings: ZalesSettings,
     private val hints: HintMemory = ForgetfulHintMemory(),
     private val random: Random = Random.Default,
 ) : ViewModel() {
@@ -74,12 +78,20 @@ public class HomeViewModel(
     ) { tunnelState, keyPresent, saying, gazeValue, hintVisible ->
         HomeUiState(
             tunnel = tunnelState,
-            plate = plateFor(tunnelState),
+            plate = versionName,
             saying = saying?.text,
             canSwitch = keyPresent || tunnelState !is TunnelState.Idle,
             pulse = tunnelState.pulse(),
             gaze = gazeValue,
             hint = hintVisible,
+        )
+    }.combine(settings.preferences) { screen, preferences ->
+        screen.copy(
+            plate = plateFor(screen.tunnel, bare = preferences.onlyTheSwitch),
+            // Both a preference and a state of mind: nothing is said lightly in
+            // calm mode, and nothing is ever said in a hard moment anyway.
+            saying = screen.saying?.takeIf { preferences.sayings && !preferences.onlyTheSwitch },
+            onlyTheSwitch = preferences.onlyTheSwitch,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), HomeUiState())
 
@@ -148,8 +160,9 @@ public class HomeViewModel(
         }
     }
 
-    private fun plateFor(state: TunnelState): String = when (state) {
-        is TunnelState.Connected -> state.latencyMs?.let { "$versionName · $it мс" } ?: versionName
+    private fun plateFor(state: TunnelState, bare: Boolean): String = when {
+        bare -> versionName
+        state is TunnelState.Connected -> state.latencyMs?.let { "$versionName · $it мс" } ?: versionName
         else -> versionName
     }
 
@@ -183,11 +196,12 @@ public class HomeViewModel(
             keys: KeyRepository,
             voice: SayingVoice,
             versionName: String,
+            settings: ZalesSettings,
             hints: HintMemory,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                HomeViewModel(tunnel, keys, voice, versionName, hints) as T
+                HomeViewModel(tunnel, keys, voice, versionName, settings, hints) as T
         }
     }
 }

@@ -4,18 +4,14 @@ plugins {
 }
 
 android {
-    namespace = "io.github.nkvas1.zales.feature.home"
+    namespace = "io.github.nkvas1.zales.feature.settings"
 }
 
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:design"))
-    implementation(project(":core:model"))
     implementation(project(":core:settings"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:voice"))
     implementation(project(":core:words"))
-    implementation(project(":tunnel:api"))
     implementation(project(":tunnel:service"))
 
     implementation(libs.androidx.core.ktx)
@@ -23,4 +19,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
