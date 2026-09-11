@@ -44,4 +44,14 @@
     <string name="settings_version">Залесье %1$s</string>
     <string name="settings_source">Исходный код открыт: github.com/nkVas1/zales</string>
 
+    <!-- Для человека, у которого ничего не работает и который уже нервничает.
+         Три шага, по порядку, без вариантов и без развилок. -->
+    <string name="settings_stuck">Что делать, если не работает</string>
+    <string name="settings_stuck_explain">Три шага по порядку. Дальше первого обычно идти не приходится.</string>
+    <string name="settings_stuck_show">Показать три шага</string>
+    <string name="settings_stuck_hide">Свернуть</string>
+    <string name="settings_stuck_1">Первое. Опустите рубильник и поднимите заново. Больше половины случаев заканчивается здесь.</string>
+    <string name="settings_stuck_2">Второе. Нажмите «Проверить тропу». Я пройду по шагам и скажу одной фразой, где споткнулись.</string>
+    <string name="settings_stuck_3">Третье. Если и это не помогло — внизу проверки есть кнопка «Скопировать». Отправьте скопированное тому, кто дал вам ключ: там всё, что ему нужно, и ничего лишнего.</string>
+    <string name="settings_stuck_calm">Ничего непоправимого не произошло. Ключ на месте, телефон цел, интернет никуда не делся — не проходит только тропа.</string>
 </resources>

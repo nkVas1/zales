@@ -86,6 +86,7 @@ public fun SettingsScreen(
         )
 
         Spacer(Modifier.height(8.dp))
+        Stuck(onCheckPath)
         AlwaysOn(onAlwaysOn)
         PathCheck(onCheckPath)
         Updates(update, onCheckUpdate, onOpenDownloads)
@@ -145,6 +146,42 @@ private fun AlwaysOn(onOpen: () -> Unit) {
             color = Zales.colors.rust,
         )
         PlateButton(text = stringResource(R.string.settings_always_on_go), onClick = onOpen)
+    }
+}
+
+/**
+ * For someone whose tunnel is down and who is already upset.
+ *
+ * Three steps in order, no branches and no choices, and it opens by saying that
+ * nothing irreversible has happened — which is the first thing a person in that
+ * state needs to hear and the last thing most software thinks to say.
+ */
+@Composable
+private fun Stuck(onCheckPath: () -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    Section(
+        title = stringResource(R.string.settings_stuck),
+        explanation = stringResource(R.string.settings_stuck_explain),
+    ) {
+        PlateButton(
+            text = stringResource(if (open) R.string.settings_stuck_hide else R.string.settings_stuck_show),
+            onClick = { open = !open },
+        )
+        if (!open) return@Section
+
+        ZalesText(
+            text = stringResource(R.string.settings_stuck_calm),
+            style = Zales.type.body,
+            color = Zales.colors.lamp,
+        )
+        listOf(
+            R.string.settings_stuck_1,
+            R.string.settings_stuck_2,
+            R.string.settings_stuck_3,
+        ).forEach { step ->
+            ZalesText(text = stringResource(step), style = Zales.type.body, color = Zales.colors.bone)
+        }
+        PlateButton(text = stringResource(R.string.settings_check_path), onClick = onCheckPath)
     }
 }
 
