@@ -21,8 +21,15 @@
     <string name="settings_updates_explain">Раз в день спрашивать у GitHub, не вышла ли новая сборка. Ничего о вас при этом не передаётся.</string>
 
     <string name="settings_always_on">Держать тропу всегда открытой</string>
-    <string name="settings_always_on_explain">Android умеет включать тропу сам и не выпускать ничего мимо неё. Настраивается один раз в системных настройках — покажу, где.</string>
+    <string name="settings_always_on_explain">Android умеет включать тропу сам при каждом запуске телефона и не выпускать наружу ничего мимо неё. Настраивается один раз, и это самое полезное, что здесь вообще можно сделать.</string>
+    <string name="settings_always_on_show">Показать, куда нажимать</string>
+    <string name="settings_always_on_hide">Свернуть</string>
     <string name="settings_always_on_go">Открыть системные настройки</string>
+    <string name="settings_always_on_step_1">1. Нажмите кнопку ниже — откроется системный список VPN.</string>
+    <string name="settings_always_on_step_2">2. Рядом со строкой «Залесье» нажмите шестерёнку. На телефонах Samsung строка называется так же, а шестерёнка справа.</string>
+    <string name="settings_always_on_step_3">3. Включите «Постоянный VPN».</string>
+    <string name="settings_always_on_step_4">4. Следом включите «Блокировать соединения без VPN». Без этого пункта телефон в первые секунды после включения успевает сходить в сеть мимо тропы.</string>
+    <string name="settings_always_on_warning">Пока тропа всегда открыта, интернета без неё не будет совсем. Если ключ перестанет работать, выключите здесь же.</string>
 
     <string name="settings_check_path">Проверить тропу</string>
     <string name="settings_check_path_explain">Пройти по шагам и посмотреть, где спотыкаемся. Пригодится, если что-то работает не так.</string>

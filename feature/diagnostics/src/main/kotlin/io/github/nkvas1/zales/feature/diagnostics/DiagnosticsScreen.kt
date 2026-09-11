@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.nkvas1.zales.design.Motion
 import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.component.PlateButton
 import io.github.nkvas1.zales.design.component.ZalesText
@@ -131,13 +132,14 @@ private fun Mark(outcome: StepOutcome) {
         animationSpec = infiniteRepeatable(tween(BREATH_MS), RepeatMode.Reverse),
         label = "breath",
     )
+    val moving = outcome is StepOutcome.Running && !Motion.stilled
     ZalesText(
         text = glyph,
         style = Zales.type.body,
         color = outcome.markColour,
         modifier = Modifier
             .width(MARK_WIDTH)
-            .alpha(if (outcome is StepOutcome.Running) breathing else 1f)
+            .alpha(if (moving) breathing else 1f)
             // The mark repeats what the line already says; a screen reader
             // should not have to read a square out loud.
             .clearAndSetSemantics { },

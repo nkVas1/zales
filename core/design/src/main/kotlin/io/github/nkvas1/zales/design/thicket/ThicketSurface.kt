@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.github.nkvas1.zales.design.Motion
 import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.ZalesColors
 import kotlin.math.abs
@@ -53,9 +54,12 @@ public fun ThicketSurface(
     val colors = Zales.colors
     val cellPx = with(LocalDensity.current) { cell.toPx() }.coerceAtLeast(1f)
 
+    // Held still when the person has asked the system to stop moving things.
+    // The forest keeps its depth and its dither; it simply stops breathing.
+    val stilled = Motion.stilled
     var time by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(state.alive) {
-        if (!state.alive) return@LaunchedEffect
+    LaunchedEffect(state.alive, stilled) {
+        if (!state.alive || stilled) return@LaunchedEffect
         val started = withFrameNanos { it }
         while (true) {
             withFrameNanos { now -> time = (now - started) / NANOS_PER_SECOND }

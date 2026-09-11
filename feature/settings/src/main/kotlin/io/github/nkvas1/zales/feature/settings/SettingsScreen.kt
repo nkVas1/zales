@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -107,13 +111,39 @@ public fun SettingsScreen(
  * The one setting worth more than all the others put together, and the one
  * nobody finds on their own: Android's own always-on VPN with connections
  * blocked without it.
+ *
+ * It cannot be turned on from here — no app is allowed to — and there is no API
+ * to read back whether it took, so the honest thing is to say exactly which
+ * four taps to make and then get out of the way. Naming the Samsung wording
+ * alongside the stock one is not padding: the two differ, and being sent to a
+ * screen that says something else is where people give up.
  */
 @Composable
 private fun AlwaysOn(onOpen: () -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
     Section(
         title = stringResource(R.string.settings_always_on),
         explanation = stringResource(R.string.settings_always_on_explain),
     ) {
+        PlateButton(
+            text = stringResource(if (open) R.string.settings_always_on_hide else R.string.settings_always_on_show),
+            onClick = { open = !open },
+        )
+        if (!open) return@Section
+
+        listOf(
+            R.string.settings_always_on_step_1,
+            R.string.settings_always_on_step_2,
+            R.string.settings_always_on_step_3,
+            R.string.settings_always_on_step_4,
+        ).forEach { step ->
+            ZalesText(text = stringResource(step), style = Zales.type.body, color = Zales.colors.bone)
+        }
+        ZalesText(
+            text = stringResource(R.string.settings_always_on_warning),
+            style = Zales.type.caption,
+            color = Zales.colors.rust,
+        )
         PlateButton(text = stringResource(R.string.settings_always_on_go), onClick = onOpen)
     }
 }

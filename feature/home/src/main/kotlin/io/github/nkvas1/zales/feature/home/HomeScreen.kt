@@ -17,13 +17,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.nkvas1.zales.design.Motion
 import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.component.PlateButton
 import io.github.nkvas1.zales.design.component.ZalesText
@@ -75,7 +79,10 @@ public fun HomeScreen(
                 pulse = state.pulse,
                 // A failure stills the forest: no breathing, no watching.
                 alive = tunnel !is TunnelState.Failed,
-                gaze = state.gaze,
+                // Being watched from the trees is the one deliberately unsettling
+                // thing here, and it is exactly what somebody asking for less
+                // movement is asking to be spared.
+                gaze = if (Motion.stilled) 0f else state.gaze,
             ),
             modifier = Modifier.fillMaxSize(),
         )
@@ -95,10 +102,16 @@ private fun Panel(
     onOpenSettings: () -> Unit,
 ) {
     val tunnel = state.tunnel
+    // At the largest system font sizes the composed layout no longer fits any
+    // screen, and weights would silently crush the switch instead of the text.
+    // Above that point the panel becomes an ordinary scrolling column: the
+    // switch keeps a real size and everything else is simply reachable.
+    val roomy = LocalDensity.current.fontScale <= LARGE_TEXT
     Column(
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
+            .then(if (roomy) Modifier else Modifier.verticalScroll(rememberScrollState()))
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -120,7 +133,7 @@ private fun Panel(
             align = TextAlign.End,
         )
 
-        Spacer(Modifier.weight(TOP_WEIGHT))
+        if (roomy) Spacer(Modifier.weight(TOP_WEIGHT)) else Spacer(Modifier.height(24.dp))
 
         ZalesText(
             text = stringResource(Words.stateWord(tunnel)),
@@ -139,13 +152,13 @@ private fun Panel(
             energised = current,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(SWITCH_WEIGHT)
-                .sizeIn(minHeight = 220.dp),
+                .then(if (roomy) Modifier.weight(SWITCH_WEIGHT) else Modifier.height(SWITCH_HEIGHT))
+                .sizeIn(minHeight = SWITCH_HEIGHT),
         )
 
         Guidance(state, onAction)
 
-        Spacer(Modifier.weight(BOTTOM_WEIGHT))
+        if (roomy) Spacer(Modifier.weight(BOTTOM_WEIGHT)) else Spacer(Modifier.height(24.dp))
 
         ZalesText(
             text = state.saying.orEmpty(),
@@ -225,6 +238,10 @@ private const val CLEARING_NARROWED = 0.55f
 private const val CLEARING_OPEN = 1f
 private const val CURRENT_DEGRADED = 0.45f
 
+private val SWITCH_HEIGHT = 220.dp
+
+/** Past this the system font is large enough that a fixed layout stops fitting. */
+private const val LARGE_TEXT = 1.5f
 private const val TOP_WEIGHT = 0.8f
 private const val SWITCH_WEIGHT = 3.2f
 private const val BOTTOM_WEIGHT = 0.6f
