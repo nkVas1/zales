@@ -19,6 +19,12 @@ style:
     # Design tokens are full of intentional literals; the palette and the type
     # scale are the specification, not magic.
     excludes: ['**/design/**', '**/test/**', '**/androidTest/**']
+  ReturnCount:
+    # Guard clauses and early exits read better than nested conditionals,
+    # especially in parsers that reject input at many points.
+    max: 4
+    excludeGuardClauses: true
+    excludeReturnFromLambda: true
   UnusedPrivateMember:
     active: true
     # @Preview composables are entry points for the IDE and for screenshot
@@ -29,7 +35,19 @@ complexity:
   LongParameterList:
     # Compose composables legitimately take many parameters.
     functionThreshold: 8
+    # Plain value holders (parsed URIs, config records) are not a smell.
+    constructorThreshold: 10
     ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # Many small, named functions beat a few long ones; count public surface only.
+    thresholdInFiles: 20
+    thresholdInClasses: 16
+    thresholdInObjects: 20
+    ignorePrivate: true
+  CyclomaticComplexMethod:
+    threshold: 15
+    # A `when` that maps one value to another is a table, not branching logic.
+    ignoreSimpleWhenEntries: true
 
 naming:
   FunctionNaming:

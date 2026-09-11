@@ -77,18 +77,10 @@ fun ShellScreen(
     }
 }
 
-@Preview(name = "Night", showBackground = true)
+@Preview(showBackground = true)
 @Composable
-private fun ShellScreenNightPreview() {
-    ZalesTheme(dark = true) {
-        ShellScreen(versionName = "0.1.0", versionCode = 1)
-    }
-}
-
-@Preview(name = "Fog", showBackground = true)
-@Composable
-private fun ShellScreenFogPreview() {
-    ZalesTheme(dark = false) {
+private fun ShellScreenPreview() {
+    ZalesTheme {
         ShellScreen(versionName = "0.1.0", versionCode = 1)
     }
 }

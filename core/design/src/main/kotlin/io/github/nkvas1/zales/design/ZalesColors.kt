@@ -57,7 +57,10 @@ public data class ZalesColors(
 ) {
     public companion object {
 
-        /** Night in the forest — the primary theme. */
+        /**
+         * The only palette. Zales is one art space with no light/dark switch:
+         * a gloomy, realistic night forest with depth.
+         */
         public val Night: ZalesColors = ZalesColors(
             void = Color(0xFF060A09),
             deep = Color(0xFF0A0F0E),
@@ -73,22 +76,6 @@ public data class ZalesColors(
             ember = Color(0xFFE0762A),
             emberHot = Color(0xFFFFB061),
             rust = Color(0xFF93331E),
-        )
-
-        /**
-         * Day in the same forest, in fog. Not paper — the dissonance has to
-         * survive the light theme, so the cold family merely lightens while
-         * the warm family stays exactly as it is. The lamp burns in daytime too.
-         */
-        public val Fog: ZalesColors = Night.copy(
-            void = Color(0xFFDCE0DE),
-            deep = Color(0xFFD2D8D5),
-            thicket = Color(0xFFC3CBC8),
-            cold = Color(0xFF8D9A96),
-            breath = Color(0xFF46524E),
-            watch = Color(0xFF6B7A76),
-            rime = Color(0xFF3E4945),
-            bone = Color(0xFF101614),
         )
     }
 }

@@ -37,5 +37,9 @@ gradlePlugin {
             id = "zales.android.compose"
             implementationClass = "AndroidComposeConventionPlugin"
         }
+        register("jvmLibrary") {
+            id = "zales.jvm.library"
+            implementationClass = "JvmLibraryConventionPlugin"
+        }
     }
 }

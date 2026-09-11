@@ -4,7 +4,6 @@
 
 package io.github.nkvas1.zales.design
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -15,15 +14,14 @@ import androidx.compose.ui.text.TextStyle
  * Zales does not use a Material theme. The visual system is its own, so the
  * theme carries exactly two things — the palette and the type scale — and
  * nothing that would let a stray Material component leak in and look generic.
+ *
+ * There is deliberately no light/dark parameter: the app is a single art space
+ * and ignores the system theme.
  */
 @Composable
-public fun ZalesTheme(
-    dark: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
-    val colors = if (dark) ZalesColors.Night else ZalesColors.Fog
+public fun ZalesTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(
-        LocalZalesColors provides colors,
+        LocalZalesColors provides ZalesColors.Night,
         LocalZalesTypography provides ZalesTypography.Default,
         LocalZalesTextStyle provides ZalesTypography.Default.body,
         content = content,

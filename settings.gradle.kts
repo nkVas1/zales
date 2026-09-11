@@ -18,6 +18,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // zales-core.aar, built from native/ by native/build_core.py (docs/adr/0003).
+        maven {
+            name = "zalesNative"
+            url = uri("native/prebuilt/maven")
+            content { includeGroup("io.github.nkvas1.zales") }
+        }
     }
 }
 
@@ -30,3 +36,9 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(":app")
 include(":core:common")
 include(":core:design")
+include(":core:model")
+include(":core:storage")
+include(":parsing")
+include(":tunnel:api")
+include(":tunnel:xray-config")
+include(":tunnel:engine-xray")

@@ -17,6 +17,18 @@ androidxActivity = "1.13.0"
 androidxLifecycle = "2.11.0"
 composeBom = "2026.09.00"
 
+# ── Native core (native/core, libXray CalVer) ──────────────────────
+zalesCore = "26.9.9"
+
+# ── Kotlin libraries ───────────────────────────────────────────────
+kotlinxCoroutines = "1.11.0"
+kotlinxSerialization = "1.11.0"
+
+# ── Testing ────────────────────────────────────────────────────────
+junit = "6.1.3"
+kotest = "6.2.5"
+turbine = "1.2.1"
+
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
@@ -32,6 +44,19 @@ compose-foundation = { module = "androidx.compose.foundation:foundation" }
 
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 
+zales-core = { module = "io.github.nkvas1.zales:zales-core", version.ref = "zalesCore" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
 # Referenced by build-logic so convention plugins can apply them by type.
 plugin-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 plugin-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -41,6 +66,7 @@ plugin-compose-compiler-gradle = { module = "org.jetbrains.kotlin:compose-compil
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 
