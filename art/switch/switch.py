@@ -553,13 +553,13 @@ def build(materials: dict) -> dict:
     # The note lies ON the panel, so it tilts about the panel's normal (Y).
     # Rotating it about Z would twist it out of the plane and bury it in the slate.
     label_tilt = -5.0
-    label_x, label_z = -4.9, -1.7
-    box("label", (3.7, 0.05, 1.9), (label_x, -0.07, label_z), materials["paper"], bevel_cm=0,
+    label_x, label_z = -5.15, -1.7
+    box("label", (4.0, 0.05, 2.2), (label_x, -0.07, label_z), materials["paper"], bevel_cm=0,
         rotation_deg=(0.0, label_tilt, 0.0))
-    text("label_text", "ИНТЕРНЕТ", FONT_HAND, 0.44, (label_x, -0.13, label_z - 0.05), materials["ink"],
+    text("label_text", "ИНТЕРНЕТ", FONT_HAND, 0.50, (label_x, -0.13, label_z - 0.05), materials["ink"],
          rotation_deg=(90.0, label_tilt, 0.0))
     # A strip of tape across the top edge, torn off at a slightly different angle.
-    box("tape", (1.6, 0.02, 0.62), (label_x + 0.15, -0.15, label_z + 0.95), materials["tape"], bevel_cm=0,
+    box("tape", (1.9, 0.02, 0.70), (label_x + 0.20, -0.15, label_z + 1.00), materials["tape"], bevel_cm=0,
         rotation_deg=(0.0, label_tilt + 6.0, 0.0))
 
     # Cloth-insulated wires leaving the frame.
@@ -631,13 +631,25 @@ def setup_lights(glow: bool) -> None:
     # A weak fill from the viewer's side. Without it the knob - the one thing
     # a hand reaches for - turns its back on the lamp and loses all form.
     fill_data = bpy.data.lights.new("fill", "AREA")
-    fill_data.energy = 0.26
+    fill_data.energy = 0.34
     fill_data.color = LAMP_COLOR
     fill_data.size = cm(18.0)
     fill = bpy.data.objects.new("fill", fill_data)
     fill.location = v(-14.0, -38.0, 4.0)
     scene.collection.objects.link(fill)
     look_at(fill, v(0.0, -6.0, 3.0))
+
+    # The handle swings a hundred degrees out of the key light's reach, and an
+    # open switch rendered as a black silhouette says nothing. This one lives
+    # under the arc and only catches the turned carbolite on its way down.
+    arc_data = bpy.data.lights.new("arc_fill", "AREA")
+    arc_data.energy = 0.30
+    arc_data.color = LAMP_COLOR
+    arc_data.size = cm(22.0)
+    arc = bpy.data.objects.new("arc_fill", arc_data)
+    arc.location = v(-18.0, -30.0, -18.0)
+    scene.collection.objects.link(arc)
+    look_at(arc, v(0.0, -14.0, -7.0))
 
     if glow:
         for x in POLES_X:
@@ -662,7 +674,7 @@ def setup_camera(parts: dict, width: int, height: int) -> bpy.types.Object:
     scene.render.resolution_y = height
 
     target = v(0.0, -3.2, -1.0)
-    cam.location = v(17.0, -62.0, -2.0)
+    cam.location = v(26.0, -62.0, 2.0)
     look_at(cam, target)
 
     # Fit the whole arc of the blade, closed and open, then leave breathing room.
@@ -680,7 +692,7 @@ def setup_camera(parts: dict, width: int, height: int) -> bpy.types.Object:
 
     cam_data.dof.use_dof = True
     cam_data.dof.focus_object = parts["handle"]
-    cam_data.dof.aperture_fstop = 11.0
+    cam_data.dof.aperture_fstop = 14.0
     parts["pivot"].rotation_euler = (0.0, 0.0, 0.0)
     return cam
 
