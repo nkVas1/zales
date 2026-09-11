@@ -4,9 +4,11 @@
 
 package io.github.nkvas1.zales.storage
 
+import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
+import androidx.annotation.RequiresApi
 import io.github.nkvas1.zales.common.ZalesLog
 import java.nio.ByteBuffer
 import java.security.GeneralSecurityException
@@ -66,12 +68,17 @@ public class KeystoreBlobCipher(private val alias: String = DEFAULT_ALIAS) : Blo
     private fun secretKey(): SecretKey {
         val store = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
         (store.getKey(alias, null) as? SecretKey)?.let { return it }
-        return try {
-            generate(strongBox = true)
-        } catch (_: StrongBoxUnavailableException) {
-            ZalesLog.info(ZalesLog.TAG_UI, "StrongBox unavailable, using TEE-backed key")
-            generate(strongBox = false)
-        }
+        // A dedicated security chip only exists from Android 9, and only on
+        // some devices; everywhere else the key still never leaves the TEE.
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) inStrongBoxIfPresent() else generate(false)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun inStrongBoxIfPresent(): SecretKey = try {
+        generate(strongBox = true)
+    } catch (_: StrongBoxUnavailableException) {
+        ZalesLog.info(ZalesLog.TAG_UI, "no StrongBox on this device, using the TEE")
+        generate(strongBox = false)
     }
 
     private fun generate(strongBox: Boolean): SecretKey {
@@ -80,7 +87,9 @@ public class KeystoreBlobCipher(private val alias: String = DEFAULT_ALIAS) : Blo
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .setKeySize(KEY_BITS)
             .setRandomizedEncryptionRequired(true)
-            .apply { if (strongBox) setIsStrongBoxBacked(true) }
+            .apply {
+                if (strongBox && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) setIsStrongBoxBacked(true)
+            }
             .build()
         return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
             .apply { init(spec) }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tunnel_channel_name">Состояние тропы</string>
+    <string name="tunnel_channel_description">Показывает, открыта ли тропа. Android требует это уведомление, пока работает VPN.</string>
+
+    <string name="tunnel_state_preparing">Готовлюсь</string>
+    <string name="tunnel_state_probing">Ищу тропу</string>
+    <string name="tunnel_state_connected">Тропа открыта</string>
+    <string name="tunnel_state_degraded">Тропа сузилась</string>
+    <string name="tunnel_state_reconnecting">Ищу обход</string>
+    <string name="tunnel_state_failed">Не прошли</string>
+    <string name="tunnel_state_stopping">Закрываю</string>
+
+    <string name="tunnel_action_close">Закрыть</string>
+</resources>

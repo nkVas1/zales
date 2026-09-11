@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Every failure the app can hit, said in one sentence, with one thing to do.
+    The wording is the specification: docs/DIAGNOSTICS.md §2. Codes never appear
+    here - they live in the report for whoever handed over the key.
+-->
+<resources>
+
+    <!-- The one big word above the switch. -->
+    <string name="state_closed">ЗАКРЫТО</string>
+    <string name="state_searching">ИЩУ ТРОПУ</string>
+    <string name="state_open">ОТКРЫТО</string>
+    <string name="state_narrowed">ТРОПА СУЗИЛАСЬ</string>
+    <string name="state_detour">ИЩУ ОБХОД</string>
+    <string name="state_failed">НЕ ПРОШЛИ</string>
+    <string name="state_closing">ЗАКРЫВАЮ</string>
+
+    <!-- Trouble on this phone. -->
+    <string name="failure_net_01">Телефон сейчас не в сети. Включите Wi-Fi или мобильный интернет.</string>
+    <string name="failure_net_02">Wi-Fi подключён, но интернета за ним нет. Так бывает в гостиницах и кафе — нужно открыть страницу входа.</string>
+    <string name="failure_net_03">Включён режим полёта.</string>
+    <string name="failure_sys_01">Android спрашивает разрешение — без него я не смогу открыть тропу. Это обычное системное окно.</string>
+    <string name="failure_sys_02">Сейчас работает другое VPN-приложение. Одновременно может быть только одно.</string>
+    <string name="failure_sys_03">Телефон отправил меня в спящий режим, поэтому связь оборвалась. Это лечится один раз и навсегда.</string>
+    <string name="failure_sys_04">Из-за экономии заряда телефон обрывает мою работу в фоне.</string>
+
+    <!-- Trouble with the key. -->
+    <string name="failure_key_01">Я не смог прочитать этот ключ. Похоже, он скопирован не целиком.</string>
+    <string name="failure_key_02">В ключе не хватает адреса заставы. Попросите прислать его ещё раз.</string>
+    <string name="failure_key_03">Ключ ведёт на страницу, которая сейчас не отвечает. Обычно это временно.</string>
+    <string name="failure_key_04">Этот ключ работает по способу, которого я пока не умею.</string>
+    <string name="failure_key_05">Ключа пока нет. Вставьте его — это единственное, что нужно.</string>
+
+    <!-- Trouble at the far end. -->
+    <string name="failure_srv_01">Не могу найти заставу по её имени. Возможно, провайдер портит справочник адресов.</string>
+    <string name="failure_srv_02">Застава отвечает, что этот вход закрыт. Скорее всего, на сервере что-то поменялось.</string>
+    <string name="failure_srv_03">Застава не отвечает. Или она выключена, или до неё не пускают.</string>
+    <string name="failure_srv_04">Застава не приняла рукопожатие. Обычно так бывает, когда на сервере обновили настройки, а ключ остался старый.</string>
+    <string name="failure_srv_05">Застава меня не узнала. Ключ, скорее всего, отозван или истёк.</string>
+    <string name="failure_srv_06">Что-то встало между мной и заставой и подменяет себя за неё. Соединяться небезопасно.</string>
+
+    <!-- Trouble with the network in between. -->
+    <string name="failure_dpi_01">Ваша сеть сегодня не пропускает этот способ связи. Я перебрал все известные мне обходы.</string>
+    <string name="failure_dpi_02">Провайдер придушивает соединение после первых килобайт. Перехожу на способ, который это обходит.</string>
+    <string name="failure_dpi_03">Тропа открыта, но узкая — провайдер замедляет. Попробую найти путь пошире.</string>
+    <string name="failure_dpi_04">У вашего оператора этот способ не проходит, а по Wi-Fi всё в порядке.</string>
+
+    <!-- Trouble inside me. -->
+    <string name="failure_int_01">Что-то сломалось у меня внутри. Это моя вина, не ваша.</string>
+    <string name="failure_int_02">Эта сборка не подходит вашему телефону. Нужна другая версия приложения.</string>
+    <string name="failure_int_03">Не могу открыть хранилище ключей. Так бывает после смены блокировки экрана.</string>
+
+    <!-- The single action offered under each sentence. -->
+    <string name="action_open_network_settings">Открыть настройки сети</string>
+    <string name="action_open_portal">Открыть страницу входа</string>
+    <string name="action_disable_airplane">Выключить режим полёта</string>
+    <string name="action_grant_permission">Показать окно снова</string>
+    <string name="action_show_other_vpn">Показать, какое именно</string>
+    <string name="action_walk_through">Провести по шагам</string>
+    <string name="action_allow_background">Разрешить работу в фоне</string>
+    <string name="action_paste_again">Вставить заново</string>
+    <string name="action_copy_request">Скопировать текст просьбы</string>
+    <string name="action_try_again">Попробовать ещё раз</string>
+    <string name="action_show_method">Показать, что за способ</string>
+    <string name="action_paste_key">Вставить ключ</string>
+    <string name="action_try_detour">Попробовать обход</string>
+    <string name="action_send_report">Отправить отчёт владельцу ключа</string>
+    <string name="action_request_new_key">Запросить новый ключ</string>
+    <string name="action_show_details">Показать подробности</string>
+    <string name="action_show_server_advice">Показать, что можно поменять на сервере</string>
+    <string name="action_show_ask_owner">Показать, что просить у владельца</string>
+    <string name="action_restart">Перезапустить</string>
+    <string name="action_open_downloads">Открыть страницу загрузки</string>
+
+    <!-- What went wrong while reading a pasted key. -->
+    <string name="parse_empty">Здесь пока пусто. Вставьте ключ.</string>
+    <string name="parse_unrecognized">Я не смог прочитать этот ключ. Похоже, он скопирован не целиком.</string>
+    <string name="parse_incomplete">В ключе потерялся кусок — так бывает, когда его скопировали не до конца.</string>
+    <string name="parse_unsupported">Этот ключ работает по способу, которого я пока не умею.</string>
+</resources>

@@ -9,6 +9,7 @@ android {
 dependencies {
     api(project(":core:model"))
     implementation(project(":core:common"))
+    implementation(libs.androidx.core.ktx)
     implementation(project(":parsing"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)

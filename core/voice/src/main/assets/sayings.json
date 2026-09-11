@@ -1,0 +1,1006 @@
+{
+  "version": 1,
+  "sayings": [
+    {
+      "id": "idle_20c3af5a",
+      "text": "Лес не спит. Лес просто молчит.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_62821634",
+      "text": "Отсюда до опушки дальше, чем кажется.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_e374544f",
+      "text": "Здесь всегда так тихо. Всегда.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_4f2ca873",
+      "text": "Кто-то ходил тут до нас. Давно.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_8f830175",
+      "text": "Ветки не шевелятся. Ни одна.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_31c56d23",
+      "text": "Лес не против вас. Лес просто большой.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_af8fe39c",
+      "text": "Тропа зарастает быстрее, чем протаптывается.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_e319d243",
+      "text": "Тут ничего не происходит уже много лет.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_21966f65",
+      "text": "Темно. Обычное дело.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_ca8ddc95",
+      "text": "Чаща стоит ровно столько, сколько стоит.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_d91d68cc",
+      "text": "Лес запоминает. Ничего не делает, просто запоминает.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_d6def479",
+      "text": "Снаружи холодно. Внутри — нет.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_eea29edf",
+      "text": "Слышно, как гудит лампа.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_95f96f9f",
+      "text": "Рукоять на месте. Она всегда на месте.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "idle_d6fa38e3",
+      "text": "За деревьями ничего нет. Проверено.",
+      "context": "IDLE",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_c63e4580",
+      "text": "Длинная строчка. Не бойтесь, я разберу.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_8c8b5e44",
+      "text": "Можно вставлять целиком, с мусором по краям.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_29a9dc23",
+      "text": "Читаю даже то, что прислали скриншотом.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_5748b28a",
+      "text": "Ключ — как дрова: главное, чтобы был свой.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_efa00487",
+      "text": "За пробелы не переживайте, я их не считаю.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_be198ec0",
+      "text": "Никуда его не отправлю. Честное слово.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_3a2b6305",
+      "text": "Не влез в буфер целиком — вставьте ещё раз, бывает.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_84c28ad4",
+      "text": "Если ключ странный, я скажу. И объясню, что странного.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_9107b253",
+      "text": "Пять форматов ключей, и все мне знакомы.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_b75dc615",
+      "text": "Пароли наизусть не запоминаю. Записываю в сейф.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_8754f364",
+      "text": "Не туда вставили? Ничего страшного, я подскажу.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_8a1ed90b",
+      "text": "Мне всё равно, откуда ключ. Лишь бы работал.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_2d60a443",
+      "text": "Тут не бывает неправильных попыток.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_344c5d72",
+      "text": "Один раз вставили — больше не понадобится.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "key_input_d807cea8",
+      "text": "Ключ останется на этом телефоне. И только тут.",
+      "context": "KEY_INPUT",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_75153a30",
+      "text": "Раздвигаю ветки.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_dda14adc",
+      "text": "Ищу, где потоньше.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_7b442097",
+      "text": "Так, а если вот здесь…",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_034fa814",
+      "text": "Пробую с трёх сторон сразу.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_b79b1acf",
+      "text": "Иду по азимуту.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_a417b793",
+      "text": "Кажется, тут была тропа.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_5d525d4b",
+      "text": "Стучусь. Вежливо.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_5051540f",
+      "text": "Проверяю, не заросло ли.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_8c9d8cd4",
+      "text": "Одну секунду, примеряюсь.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_777ac41c",
+      "text": "Смотрю, куда сегодня пускают.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_aebeff1a",
+      "text": "Пошёл.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_6b976169",
+      "text": "Тропа где-то здесь, я помню.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_0141dfb4",
+      "text": "Перебираю связку.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_34a8376c",
+      "text": "Заглядываю за поворот.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_b28913ac",
+      "text": "Держитесь, сейчас будет просека.",
+      "context": "CONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_53b23e5c",
+      "text": "Лес сегодня густой. Но я упрямый.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_bdb8212f",
+      "text": "Ещё немного. Я не завис, я думаю.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_6ff740b8",
+      "text": "Перебираю варианты. Их у меня много.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_cfbd803f",
+      "text": "Иногда с четвёртого раза выходит лучше, чем с первого.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_23fe3966",
+      "text": "Здесь надо боком.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_6ff84526",
+      "text": "Не бросайте меня, я почти.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_159be68c",
+      "text": "Пробую тот способ, который вчера сработал.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_0e8bb246",
+      "text": "Мешают. Обхожу.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_f5f606d1",
+      "text": "Долго — не значит плохо.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_a9e6fe99",
+      "text": "Тропа есть всегда. Вопрос, где.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_d6c5f85d",
+      "text": "Ещё три варианта в запасе.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_9f870106",
+      "text": "Терпение. У меня его много, у вас пусть тоже будет.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_fd56a6ec",
+      "text": "Тут раньше проходили. Значит, пройдём.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_6a91045e",
+      "text": "Не тороплюсь, чтобы потом не переделывать.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connecting_long_b7e04af4",
+      "text": "Сложный участок. Уже почти.",
+      "context": "CONNECTING_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_5d59b99b",
+      "text": "Прошли. Ставьте чайник.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_a4d185e1",
+      "text": "Вышли из леса. Заходите, тут тепло.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_584f6d56",
+      "text": "Всё. Дверь закрыта, лампа горит.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_4475bfb5",
+      "text": "Готово. Можно смотреть кино.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_593ece6b",
+      "text": "Ну вот. А вы боялись.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_70da801e",
+      "text": "С возвращением в большой интернет.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_23c4f83a",
+      "text": "Открыто. Пользуйтесь.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_24d8c0c4",
+      "text": "Порядок. Дальше — ваше дело.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_3f77d08c",
+      "text": "Дошли. Садитесь, отдохните.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_59fcdc31",
+      "text": "Есть контакт.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_db214e0c",
+      "text": "Свободно. Проходите.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_8fe4312e",
+      "text": "Вот и просека.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_988311c6",
+      "text": "Теперь как обычно, только лучше.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_9b9f43f1",
+      "text": "Сделано. Можете закрывать приложение.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_fresh_0cd2e719",
+      "text": "Тропа держится. Я слежу.",
+      "context": "CONNECTED_FRESH",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_d3809a0b",
+      "text": "Работаю. Можете не проверять.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_9ae8e65e",
+      "text": "Тут всё хорошо. Правда.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_72d5312a",
+      "text": "Иду ровно, как поезд.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_7ef95114",
+      "text": "Лампа горит, чайник остыл. Всё как надо.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_d9f6e8e2",
+      "text": "Скучно. Это лучшая новость за день.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_5147c6b0",
+      "text": "Можно закрыть приложение. Я останусь.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_ac1e43b6",
+      "text": "Сижу, поглядываю в окно. Спокойно.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_c0121b89",
+      "text": "Ничего не происходит. И слава богу.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_0c159865",
+      "text": "Ни одного обрыва. Продолжаю.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_29f5026a",
+      "text": "Тропа широкая, идите смело.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_9f77d3ee",
+      "text": "Держу. Не отвлекайтесь на меня.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_d3d3baad",
+      "text": "Пока вы читали это, прошло ещё немного трафика.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_0b9098b1",
+      "text": "Тишина в эфире — признак хорошей работы.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_dafe1afe",
+      "text": "Всё на месте, всё идёт.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "connected_long_ba0504dc",
+      "text": "Я тут. Я всегда тут.",
+      "context": "CONNECTED_LONG",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_34d15569",
+      "text": "Тропа сузилась. Ищу обход.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_5c9fd62a",
+      "text": "Секунду, поправлю.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_4ee178c5",
+      "text": "Бывает. Уже занимаюсь.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_e9e5f35e",
+      "text": "Не переключайте, я сам.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_c5ccbf78",
+      "text": "Нашёл, где перейти. Иду.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_f23969da",
+      "text": "Это ненадолго.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_ce91880b",
+      "text": "Связь дрогнула. Восстанавливаю.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_f7e0c1fd",
+      "text": "Другой способ, тот же ключ.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_1b159f5e",
+      "text": "Всё под контролем, просто медленнее.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "reconnecting_e405bd19",
+      "text": "Пробую заново. Вам ничего делать не нужно.",
+      "context": "RECONNECTING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "first_run_3f3ec228",
+      "text": "Здравствуйте. Я тут, чтобы вам не пришлось разбираться.",
+      "context": "FIRST_RUN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "first_run_12470486",
+      "text": "Всё, что нужно, — один ключ и один рубильник.",
+      "context": "FIRST_RUN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "first_run_4f33346f",
+      "text": "Начнём. Это займёт минуту.",
+      "context": "FIRST_RUN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "first_run_f55733af",
+      "text": "Ничего настраивать не придётся. Обещаю.",
+      "context": "FIRST_RUN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "first_run_f0ce81a1",
+      "text": "Один раз вставите ключ — и забудете про меня.",
+      "context": "FIRST_RUN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "veteran_ae10234e",
+      "text": "Мы с вами уже сотый раз. Хорошая привычка.",
+      "context": "VETERAN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "veteran_db7d7195",
+      "text": "Узнаю вас по походке.",
+      "context": "VETERAN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "veteran_4cf82e5d",
+      "text": "Как обычно?",
+      "context": "VETERAN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "veteran_f0edc404",
+      "text": "Вы тут чаще меня.",
+      "context": "VETERAN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "veteran_fa6dd4a9",
+      "text": "Эту тропу вы знаете лучше меня.",
+      "context": "VETERAN",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_416a080f",
+      "text": "Три часа ночи. Лес и не думал спать.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_7bec9c4f",
+      "text": "В это время он ближе.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_fb11a43c",
+      "text": "Ночью слышно дальше. Гораздо дальше.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_8e614998",
+      "text": "Лампа горит. Пока горит.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_243f0a19",
+      "text": "Ничего не слышно. Совсем ничего.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_e556c8f1",
+      "text": "Ночью тропы шире. Проверено.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_061a2bdc",
+      "text": "В такое время в лесу только совы и мы.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "night_24209ac5",
+      "text": "Спать, между прочим, тоже полезно.",
+      "context": "NIGHT",
+      "register": "THICKET",
+      "tier": "COMMON"
+    },
+    {
+      "id": "morning_c7df9442",
+      "text": "Доброе утро. Лес уже проснулся.",
+      "context": "MORNING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "morning_79d939c8",
+      "text": "Роса. Осторожно, скользко.",
+      "context": "MORNING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "morning_c34de274",
+      "text": "Раннее утро — лучшее время для тропы.",
+      "context": "MORNING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "morning_8fc8fd25",
+      "text": "Птицы уже отчитались. Всё спокойно.",
+      "context": "MORNING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "morning_0fb667db",
+      "text": "Ночь прошла. Как обычно, ничего не случилось.",
+      "context": "MORNING",
+      "register": "HUT",
+      "tier": "COMMON"
+    },
+    {
+      "id": "rare_629850c4",
+      "text": "Здесь был Кирилл. 1987.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_68223688",
+      "text": "Медведь просил передать, что он не при делах.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_34ac8fa2",
+      "text": "Если долго смотреть на чащу, чаща посмотрит в ответ.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_096c358e",
+      "text": "В лесу родилась ёлочка. В лесу она и осталась.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_59646c2d",
+      "text": "Однажды кто-то дошёл до конца этого списка. Это были не вы.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_3970033a",
+      "text": "Леший ушёл на обед. Вернётся не скоро.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_e9e4ee2a",
+      "text": "Тридевятое царство временно недоступно.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_f7b6174a",
+      "text": "Кощей сменил пароль.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_efec1a82",
+      "text": "Тропа помнит всех, кто по ней прошёл. Но никому не рассказывает.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_c99b90a8",
+      "text": "Этот текст никто не должен был увидеть. А вы увидели.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_af92d76e",
+      "text": "Избушка повернулась не туда. Уже развернули.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_18a841e4",
+      "text": "Клубок укатился. Идём по приборам.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_4b67d0dd",
+      "text": "Соловей-разбойник переведён на удалёнку.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_b94d5059",
+      "text": "По усам текло, а в рот не попало. Как всегда.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_fb68a6fc",
+      "text": "Тут раньше стоял дуб. Хороший был дуб.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_c7cc3e1a",
+      "text": "На старых картах здесь ничего не нарисовано.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_1330bbe0",
+      "text": "Кто-то оставил зарубку. Не я.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_a0942035",
+      "text": "Считалось, что дальше идти нельзя. Считалось.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_cf3dfaea",
+      "text": "Дорогу спрашивать не у кого.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    },
+    {
+      "id": "rare_a2655cef",
+      "text": "Не оборачивайтесь. Шучу, можно.",
+      "context": "RARE",
+      "register": "THICKET",
+      "tier": "RARE"
+    }
+  ]
+}

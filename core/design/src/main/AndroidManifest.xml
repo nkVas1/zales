@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The switch answers in the hand: notches under the blade, a thud at the
+         latch. Without this the control still works, just silently. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+</manifest>

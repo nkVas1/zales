@@ -47,7 +47,7 @@ INK = (0.03, 0.03, 0.035)
 CLOTH = (0.035, 0.025, 0.02)
 EMBER = (1.0, 0.36, 0.09)
 
-LAMP_COLOR = (1.0, 0.68, 0.40)   # warm key: the hut
+LAMP_COLOR = (1.0, 0.72, 0.46)   # warm key: the hut
 RIM_COLOR = (0.40, 0.56, 0.68)   # cold rim: the forest
 
 OPEN_ANGLE_DEG = 105.0
@@ -181,9 +181,9 @@ def mat_slate() -> bpy.types.Material:
     mat, tree, bsdf = new_material("slate")
     grain = noise(tree, 180.0, detail=12, roughness=0.7)
     clouds = noise(tree, 9.0, detail=4, roughness=0.5)
-    tone = ramp(tree, clouds.outputs["Fac"], [(0.35, (0.022, 0.028, 0.032)), (0.7, (0.05, 0.058, 0.064))])
+    tone = ramp(tree, clouds.outputs["Fac"], [(0.35, (0.016, 0.023, 0.028)), (0.7, (0.036, 0.048, 0.057))])
     wear = edge_mask(tree, 0.50, 0.56)
-    worn = mix_color(tree, wear.outputs["Color"], tone.outputs["Color"], (0.12, 0.13, 0.13))
+    worn = mix_color(tree, wear.outputs["Color"], tone.outputs["Color"], (0.075, 0.092, 0.105))
     tree.links.new(worn, socket(bsdf, "Base Color"))
     rough = ramp(tree, grain.outputs["Fac"], [(0.3, (0.52, 0.52, 0.52)), (0.8, (0.78, 0.78, 0.78))])
     tree.links.new(rough.outputs["Color"], socket(bsdf, "Roughness"))
@@ -226,20 +226,24 @@ def mat_metal(name: str, color, patina_color, patina_amount: float, roughness=(0
 
 
 def mat_carbolite() -> bpy.types.Material:
+    """Moulded carbolite: deep, glassy and hard, the way a real handle is."""
     mat, tree, bsdf = new_material("carbolite")
     swirl = noise(tree, 40.0, detail=6, roughness=0.55)
     body = ramp(tree, swirl.outputs["Fac"], [(0.3, (0.06, 0.018, 0.012)), (0.7, CARBOLITE)])
-    # Forty years of thumbs: the knob's crown is polished lighter.
+
+    # Forty years of thumbs: the crown of the knob is polished lighter.
     tc = tree.nodes.new("ShaderNodeTexCoord")
     sep = tree.nodes.new("ShaderNodeSeparateXYZ")
     tree.links.new(tc.outputs["Object"], sep.inputs[0])
-    # Local Z of the turned handle runs from the collar (0) to the knob crown (9.4 cm).
-    polish = ramp(tree, sep.outputs["Z"], [(cm(6.2), (0, 0, 0)), (cm(8.8), (1, 1, 1))])
+    # Local Z of the turned handle runs from the collar (0) to the knob (7.7 cm).
+    polish = ramp(tree, sep.outputs["Z"], [(cm(4.8), (0, 0, 0)), (cm(7.4), (1, 1, 1))])
     colored = mix_color(tree, polish.outputs["Color"], body.outputs["Color"], (0.24, 0.085, 0.05))
     tree.links.new(colored, socket(bsdf, "Base Color"))
+
     set_input(bsdf, ("Roughness",), 0.22)
     set_input(bsdf, ("Coat Weight", "Clearcoat"), 0.7)
     set_input(bsdf, ("Coat Roughness", "Clearcoat Roughness"), 0.06)
+
     scratches = noise(tree, 520.0, detail=2, roughness=0.4)
     fine = ramp(tree, scratches.outputs["Fac"], [(0.68, (0, 0, 0)), (0.7, (1, 1, 1))])
     tree.links.new(bump(tree, fine.outputs["Color"], 0.12, cm(0.004)).outputs["Normal"], socket(bsdf, "Normal"))
@@ -419,6 +423,10 @@ def lathe(name: str, profile_cm: list[tuple[float, float]], axis_origin_cm, mate
     screw.steps = 64
     screw.render_steps = 96
     screw.use_merge_vertices = True
+    # The default threshold is one centimetre, which is thicker than the whole
+    # handle: it collapses every revolved ring of the shaft into a single point
+    # and leaves the knob floating free of its stem.
+    screw.merge_threshold = cm(0.005)
     screw.use_smooth_shade = True
     # Local Z of the profile becomes world -Y: the handle points out of the panel.
     obj.rotation_euler = (math.radians(90), 0.0, 0.0)
@@ -526,10 +534,12 @@ def build(materials: dict) -> dict:
     for x in POLES_X:
         cylinder(f"crossbar_rivet_{x}", 0.24, 3.0, (x, BLADE_Y - 0.7, crossbar_z), "Y", materials["brass"], segments=24, parent=pivot)
 
-    # Turned carbolite handle: collar, waist, grip and a worn knob.
+    # Turned carbolite handle: collar, waist, grip and a hand-worn knob.
     profile = [
-        (0.0, 0.0), (1.35, 0.0), (1.35, 0.5), (0.95, 0.8), (0.82, 1.6), (0.86, 3.0),
-        (0.78, 3.9), (1.15, 4.5), (1.62, 5.4), (1.72, 6.1), (1.5, 6.9), (0.95, 7.5), (0.0, 7.7),
+        (0.0, 0.0), (1.35, 0.0), (1.35, 0.45), (1.18, 0.62), (0.95, 0.85), (0.84, 1.3),
+        (0.80, 2.0), (0.84, 2.8), (0.86, 3.4), (0.80, 3.9), (0.92, 4.25), (1.16, 4.65),
+        (1.42, 5.1), (1.60, 5.55), (1.70, 6.0), (1.72, 6.35), (1.66, 6.7), (1.52, 7.0),
+        (1.28, 7.3), (0.92, 7.55), (0.48, 7.7), (0.0, 7.74),
     ]
     parts["handle"] = lathe("handle", profile, (0.0, BLADE_Y - 2.05, crossbar_z), materials["carbolite"], parent=pivot)
 
@@ -537,16 +547,20 @@ def build(materials: dict) -> dict:
     text("legend_on", "ВКЛ", FONT_MONO, 1.15, (0.0, -0.02, 10.9), materials["paint"])
     text("legend_off", "ВЫКЛ", FONT_MONO, 1.15, (0.0, -0.02, -10.6), materials["paint"])
     box("nameplate", (6.4, 0.14, 1.7), (0.0, -0.08, -12.3), materials["brass"], bevel_cm=0.05)
-    text("nameplate_text", "ZALES  Р-25  380 В", FONT_MONO, 0.55, (0.0, -0.17, -12.3), materials["engraving"])
+    text("nameplate_text", "ZALES  Р-25", FONT_MONO, 0.5, (0.0, -0.17, -12.3), materials["engraving"])
 
     # The warm human detail: a handwritten paper note under yellowed tape.
+    # The note lies ON the panel, so it tilts about the panel's normal (Y).
+    # Rotating it about Z would twist it out of the plane and bury it in the slate.
     label_tilt = -5.0
-    box("label", (5.0, 0.05, 2.3), (-3.6, -0.06, -3.8), materials["paper"], bevel_cm=0,
-        rotation_deg=(0.0, 0.0, label_tilt))
-    text("label_text", "ИНТЕРНЕТ", FONT_HAND, 0.62, (-3.6, -0.12, -3.9), materials["ink"],
-         rotation_deg=(90.0, 0.0, label_tilt))
-    box("tape", (1.9, 0.02, 0.7), (-3.6, -0.13, -2.68), materials["tape"], bevel_cm=0,
-        rotation_deg=(0.0, 0.0, label_tilt + 9.0))
+    label_x, label_z = -4.9, -1.7
+    box("label", (3.7, 0.05, 1.9), (label_x, -0.07, label_z), materials["paper"], bevel_cm=0,
+        rotation_deg=(0.0, label_tilt, 0.0))
+    text("label_text", "ИНТЕРНЕТ", FONT_HAND, 0.44, (label_x, -0.13, label_z - 0.05), materials["ink"],
+         rotation_deg=(90.0, label_tilt, 0.0))
+    # A strip of tape across the top edge, torn off at a slightly different angle.
+    box("tape", (1.6, 0.02, 0.62), (label_x + 0.15, -0.15, label_z + 0.95), materials["tape"], bevel_cm=0,
+        rotation_deg=(0.0, label_tilt + 6.0, 0.0))
 
     # Cloth-insulated wires leaving the frame.
     for pole, x in enumerate(POLES_X):
@@ -614,6 +628,17 @@ def setup_lights(glow: bool) -> None:
     scene.collection.objects.link(rim)
     look_at(rim, v(0.0, -2.0, 0.0))
 
+    # A weak fill from the viewer's side. Without it the knob - the one thing
+    # a hand reaches for - turns its back on the lamp and loses all form.
+    fill_data = bpy.data.lights.new("fill", "AREA")
+    fill_data.energy = 0.26
+    fill_data.color = LAMP_COLOR
+    fill_data.size = cm(18.0)
+    fill = bpy.data.objects.new("fill", fill_data)
+    fill.location = v(-14.0, -38.0, 4.0)
+    scene.collection.objects.link(fill)
+    look_at(fill, v(0.0, -6.0, 3.0))
+
     if glow:
         for x in POLES_X:
             ember_data = bpy.data.lights.new(f"ember_{x}", "POINT")
@@ -636,8 +661,8 @@ def setup_camera(parts: dict, width: int, height: int) -> bpy.types.Object:
     scene.render.resolution_x = width
     scene.render.resolution_y = height
 
-    target = v(0.0, -3.2, -0.5)
-    cam.location = v(22.0, -62.0, 7.0)
+    target = v(0.0, -3.2, -1.0)
+    cam.location = v(17.0, -62.0, -2.0)
     look_at(cam, target)
 
     # Fit the whole arc of the blade, closed and open, then leave breathing room.

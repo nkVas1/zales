@@ -7,7 +7,14 @@ package io.github.nkvas1.zales
 import android.app.Application
 import io.github.nkvas1.zales.common.ZalesLog
 
-class ZalesApp : Application() {
+public class ZalesApp : Application() {
+
+    /**
+     * Built lazily: the tunnel process loads this class too, and it has no use
+     * for the interface's objects.
+     */
+    public val container: ZalesContainer by lazy { ZalesContainer(this) }
+
     override fun onCreate() {
         super.onCreate()
         ZalesLog.info(ZalesLog.TAG_UI, "Zales ${BuildConfig.VERSION_NAME} starting")

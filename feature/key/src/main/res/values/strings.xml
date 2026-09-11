@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_title">Ключ</string>
+    <string name="key_explanation">Вставьте сюда ключ, который вам дали. Он длинный и начинается с vless:// или ss:// — это нормально. Можно вставлять целиком, вместе с лишним текстом вокруг.</string>
+    <string name="key_clipboard_noticed">Похоже, вы уже скопировали ключ.</string>
+    <string name="key_paste_clipboard">Вставить скопированное</string>
+    <string name="key_save">Сохранить ключ</string>
+    <string name="key_stored">Сохранённые ключи</string>
+    <string name="key_forget">Забыть</string>
+    <string name="key_insecure">Этот ключ не проверяет подлинность заставы.</string>
+    <string name="key_accepted">Ключ принят.</string>
+    <string name="key_accepted_many">Принято ключей: %1$d</string>
+    <string name="key_fetching">Скачиваю настройки по ссылке…</string>
+    <string name="key_fetch_failed">Ссылка сейчас не отвечает. Обычно это временно.</string>
+</resources>
