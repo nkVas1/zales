@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Названия шагов проверки. Каждое — то, что человек и сам хотел бы спросить,
+    в том порядке, в каком спросил бы (docs/DIAGNOSTICS.md §4).
+-->
+<resources>
+
+    <string name="check_title">ПРОВЕРКА ТРОПЫ</string>
+    <string name="check_intro">Пройду по шагам и посмотрю, где спотыкаемся. Это займёт несколько секунд.</string>
+
+    <string name="check_step_interface">Телефон в сети</string>
+    <string name="check_step_dns">Застава найдена по имени</string>
+    <string name="check_step_tcp">До заставы достучались</string>
+    <string name="check_step_transport">Рукопожатие прошло</string>
+    <string name="check_step_auth">Застава нас узнала</string>
+    <string name="check_step_http">Данные ходят</string>
+    <string name="check_step_background">Телефон не мешает работать в фоне</string>
+
+    <!-- Итог проверки. -->
+    <string name="check_all_well">Сейчас всё проходит. Если только что не работало — похоже, уже починилось.</string>
+    <string name="check_again">Проверить ещё раз</string>
+    <string name="check_back">Назад к рубильнику</string>
+
+    <!-- Технический блок. Его не читают — его пересылают. -->
+    <string name="check_report_show">Показать, что передать владельцу ключа</string>
+    <string name="check_report_hide">Свернуть</string>
+    <string name="check_report_warning">Здесь нет ни ключа, ни пароля — только то, что нужно тому, кто держит заставу.</string>
+    <string name="check_report_copy">Скопировать</string>
+    <string name="check_report_copied">Скопировано. Осталось отправить.</string>
+
+</resources>
