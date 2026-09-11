@@ -191,9 +191,15 @@ public class ZalesVpnService : VpnService() {
     // ── The state machine ──────────────────────────────────────────────
 
     private fun open() {
-        val mine = ++session
         scope.launch {
             if (state.value.isBusy) return@launch
+            // Claimed here rather than at the call: two opens arriving together
+            // — the tile and the screen, say — would otherwise have the first
+            // one invalidate itself and the second turn back at the busy check,
+            // leaving the tunnel stuck in "searching" for ever. Work is
+            // serialised onto one thread, so the state read above and this claim
+            // cannot be interleaved.
+            val mine = ++session
             update(TunnelState.Preparing)
 
             val key = loadKey() ?: return@launch
