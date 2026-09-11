@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The launcher icon is the one place the palette leaves the app, so the tones
+    are named here rather than inlined: an icon that drifts from the screen it
+    opens reads as somebody else's app.
+-->
 <resources>
     <!-- Mirrors ZalesColors.Night.void — used for the window background so the
          cold launch shows the thicket, not a white flash. -->
     <color name="zales_void">#FF060A09</color>
+
+    <!-- ── The launcher icon ──────────────────────────────────────────
+         A night wood with a fire's worth of light low in it. The glow is three
+         flat steps and not a gradient: the app quantises everything it draws to
+         two tones, and an icon that blooms would promise software that does not
+         exist. -->
+    <color name="icon_night">#FF070C0B</color>
+    <color name="icon_glow_far">#FF2A1E0E</color>
+    <color name="icon_glow_mid">#FF7A5520</color>
+    <color name="icon_glow_core">#FFE8C077</color>
+
+    <!-- Three ranks of spruce, each a step darker as it comes forward. -->
+    <color name="icon_far_wood">#FF24352E</color>
+    <color name="icon_mid_wood">#FF111C18</color>
+    <color name="icon_near_wood">#FF040706</color>
 </resources>

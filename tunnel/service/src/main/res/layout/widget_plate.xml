@@ -18,7 +18,7 @@
         android:layout_height="28dp"
         android:layout_marginEnd="10dp"
         android:contentDescription="@string/tile_name"
-        android:src="@drawable/ic_tile" />
+        android:src="@drawable/ic_zales_mark" />
 
     <TextView
         android:id="@+id/widget_word"

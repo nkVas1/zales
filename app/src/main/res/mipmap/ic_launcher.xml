@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Three layers, which is what a 2026 Android icon is: a ground that every mask
+    can crop, a mark that lives inside the guaranteed-visible circle, and a
+    single-colour silhouette for people who theme their home screen.
+
+    No density buckets and no PNGs. minSdk is 26, so the adaptive icon is the
+    only icon there has ever been on any phone that can install this.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/zales_void" />
+    <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>

@@ -57,6 +57,13 @@ OPEN_ANGLE_DEG = 105.0
 # room the shift borrows from one side is given back on the other.
 SHIFT_ROOM = 2.4
 
+# The icon's square covers this much of the switch, top to bottom. Sized so the
+# head sits inside the middle of the frame, which is the part every launcher
+# mask is guaranteed to show.
+ICON_FIELD_CM = 15.5
+ICON_LENS = 95.0
+ICON_SENSOR = 36.0
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 FONT_MONO = os.path.join(REPO, "core", "design", "src", "main", "res", "font", "jetbrains_mono.ttf")
@@ -83,6 +90,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--width", type=int, default=1080)
     parser.add_argument("--height", type=int, default=1620)
     parser.add_argument("--preview", help="render one PNG at --angle instead of a sequence")
+    parser.add_argument("--icon", help="render the square launcher icon to this PNG")
+    parser.add_argument("--icon-size", type=int, default=432)
     parser.add_argument("--angle", type=float, default=0.0)
     parser.add_argument("--glow", action="store_true", help="preview with current flowing")
     parser.add_argument("--save-blend", help="also save the scene for inspection")
@@ -718,6 +727,67 @@ def setup_camera(parts: dict, width: int, height: int) -> bpy.types.Object:
     return cam
 
 
+def icon_subjects(scene) -> list[bpy.types.Object]:
+    """The mechanism: what moves, and what it closes into. Nothing else."""
+    kept = ("blade_", "crossbar", "handle", "jaw_", "hinge_", "pivot_")
+    return [
+        obj for obj in scene.objects
+        if obj.type == "MESH" and not obj.hide_render and obj.name.startswith(kept)
+    ]
+
+
+def icon_frame_subjects(scene) -> list[bpy.types.Object]:
+    """What the square is fitted to: the head of the switch.
+
+    Not the whole mechanism. Fitted to all of it, the blades make the group tall
+    and narrow, and a square icon of a tall narrow thing is mostly margin. The
+    head — jaws, crossbar, handle — is nearly square on its own, and letting the
+    blades run out of the bottom of the frame reads as a thing continuing rather
+    than a thing cut off.
+    """
+    kept = ("crossbar", "handle", "jaw_")
+    return [
+        obj for obj in scene.objects
+        if obj.type == "MESH" and not obj.hide_render and obj.name.startswith(kept)
+    ]
+
+
+def setup_icon_camera(size: int) -> bpy.types.Object:
+    """A square view of the switch's head, framed by hand rather than fitted.
+
+    Fitting kept producing either a tall sliver or a macro shot of the knob,
+    because the group's centre of mass and the place it appears to sit are not
+    the same point once the handle is projecting at the lens. So the framing is
+    stated outright: look at the crossbar from a little to the right and a
+    little above, and stand back far enough for a hand's width of switch.
+
+    The blades run out of the bottom of the frame on purpose. A mechanism that
+    continues past the edge reads as part of something; one that floats whole in
+    the middle reads as a trinket.
+    """
+    scene = bpy.context.scene
+    cam_data = bpy.data.cameras.new("icon_camera")
+    cam_data.lens = ICON_LENS
+    cam_data.sensor_fit = "VERTICAL"
+    cam_data.sensor_width = ICON_SENSOR
+    cam_data.sensor_height = ICON_SENSOR
+    cam = bpy.data.objects.new("icon_camera", cam_data)
+    scene.collection.objects.link(cam)
+    scene.camera = cam
+    scene.render.resolution_x = size
+    scene.render.resolution_y = size
+
+    target = v(0.0, -4.0, 6.1)
+    # The angle a hand comes at it from: slightly right, slightly above.
+    direction = Vector((0.343, -0.916, 0.210))
+    half = ICON_FIELD_CM / 2.0
+    distance = cm(half) / math.tan(math.atan(ICON_SENSOR / 2.0 / ICON_LENS))
+    cam.location = target + direction * distance
+    look_at(cam, target)
+    cam_data.dof.use_dof = False
+    return cam
+
+
 def setup_render(samples: int) -> None:
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
@@ -792,8 +862,30 @@ def main() -> None:
 
     parts = build(materials)
     setup_render(args.samples)
-    setup_camera(parts, args.width, args.height)
+    if not args.icon:
+        setup_camera(parts, args.width, args.height)
     scene = bpy.context.scene
+
+    if args.icon:
+        # The wall, the paperwork and the wiring are not the app. Hidden rather
+        # than deleted, so the same scene still renders the sequence.
+        keep = set(icon_subjects(scene))
+        for obj in list(scene.objects):
+            if obj.type in {"MESH", "CURVE", "FONT"} and obj not in keep:
+                obj.hide_render = True
+
+        # Current flowing: an icon shows the thing working, never waiting.
+        setup_lights(glow=True)
+        set_glow(materials, True)
+        parts["pivot"].rotation_euler = (0.0, 0.0, 0.0)
+        setup_icon_camera(args.icon_size)
+        scene.render.film_transparent = True
+        scene.render.image_settings.file_format = "PNG"
+        scene.render.image_settings.color_mode = "RGBA"
+        scene.render.filepath = os.path.abspath(args.icon)
+        bpy.ops.render.render(write_still=True)
+        print(f"[switch] icon written to {scene.render.filepath}")
+        return
 
     if args.preview:
         setup_lights(glow=args.glow)

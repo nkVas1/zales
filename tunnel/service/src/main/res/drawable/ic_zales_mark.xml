@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    One spruce out of the wood the launcher icon shows.
+
+    A whole treeline at 24dp is mush, and the notification, the tile and the
+    widget all tint this to a single colour anyway, so it is one tree drawn with
+    the same two tiers and the same skirt — the same hand, at a size that can
+    only hold one of them.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?android:attr/colorControlNormal">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2.5 L14.8,9.0 L13.7,9.5 L16.9,15.4 L15.5,16.0 L19,21.5 L5,21.5 L8.5,16.0 L7.1,15.4 L10.3,9.5 L9.2,9.0 Z" />
+</vector>

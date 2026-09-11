@@ -38,7 +38,9 @@ internal class TunnelNotification(private val service: ZalesVpnService) {
     fun build(state: TunnelState): Notification {
         val builder = Notification.Builder(service, CHANNEL_ID)
             .setContentTitle(service.getString(titleOf(state)))
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            // The app's own mark, not the system padlock: a notification that lives
+            // in the shade for days should say which app it belongs to.
+            .setSmallIcon(R.drawable.ic_zales_mark)
             .setOngoing(true)
             .setShowWhen(false)
             .setOnlyAlertOnce(true)
