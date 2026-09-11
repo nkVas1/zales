@@ -63,11 +63,11 @@
 
 **Работы**
 
-1. `native/` — сборочные скрипты: libXray → `zales-core.aar` (gomobile, arm64-v8a + armeabi-v7a); hev-socks5-tunnel → `libhev.so` (ndk-build)
-2. GitHub Actions `native.yml`: собирает оба артефакта, публикует в релиз с тегом версии ядра, Gradle тянет их оттуда
+1. `native/` — сборочные скрипты: libXray → `zales-core.aar` (gomobile, arm64-v8a + armeabi-v7a). Больше ничего нативного: TUN — вход самого Xray ([ADR-0007](adr/0007-native-tun-inbound.md))
+2. GitHub Actions `native.yml`: собирает артефакт, публикует в релиз с тегом версии ядра, Gradle тянет его оттуда
 3. `tunnel:api` — `TunnelEngine`, `TunnelState`, `TunnelEvent`, модель ошибок
 4. `tunnel:engine-xray` — мост к `Invoke(json)`, сборщик конфигурации Xray, разбор ответов
-5. `tunnel:tun` — JNI-обёртка над `hev_socks5_tunnel_main(config, tun_fd)`
+5. Передача дескриптора в ядро через `xray.tun.fd` — переменная выставляется со стороны Go, иначе inbound её не видит
 6. `tunnel:vpnservice` — `ZalesVpnService`: настройка `Builder` (маршруты, MTU, DNS, IPv6, обход локальных сетей), foreground-уведомление, корректный жизненный цикл
 7. Проверка гипотез: поддерживает ли Xray `prefix` из ключей Outline; работает ли XHTTP в режиме `packet-up`; поведение при смене сети
 

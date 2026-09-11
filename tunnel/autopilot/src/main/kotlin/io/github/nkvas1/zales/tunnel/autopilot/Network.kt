@@ -7,6 +7,7 @@ package io.github.nkvas1.zales.tunnel.autopilot
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.provider.Settings
 import android.telephony.TelephonyManager
 import io.github.nkvas1.zales.tunnel.api.StrategyId
 import java.security.MessageDigest
@@ -82,6 +83,51 @@ public class NetworkFingerprinter(context: Context) {
     private companion object {
         const val DIGEST_BYTES = 6
     }
+}
+
+/**
+ * What the phone's own connection is like, before the tunnel is blamed for it.
+ *
+ * Half of all "the VPN is broken" is the phone being off the network, in
+ * aeroplane mode, or behind a hotel's sign-in page. Each of those has its own
+ * sentence and its own thing to do, and none of them is worth a race.
+ */
+public enum class Uplink {
+    /** Aeroplane mode: a single switch explains everything. */
+    AIRPLANE,
+
+    /** No network at all. */
+    OFFLINE,
+
+    /** Connected, but the system says the internet behind it is not real yet. */
+    CAPTIVE,
+
+    /** Nothing in the way. */
+    READY,
+}
+
+/** Reads the state of the phone's own connection. */
+public class UplinkProbe(context: Context) {
+
+    private val application = context.applicationContext
+
+    public fun current(): Uplink {
+        if (airplaneMode()) return Uplink.AIRPLANE
+        val manager = application.getSystemService(ConnectivityManager::class.java) ?: return Uplink.READY
+        val network = manager.activeNetwork ?: return Uplink.OFFLINE
+        val capabilities = manager.getNetworkCapabilities(network) ?: return Uplink.OFFLINE
+        if (!capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) return Uplink.OFFLINE
+        // Only Android's own verdict counts here. A network that has merely not
+        // been validated *yet* is the normal state for the first second after
+        // joining one, and telling someone to open a sign-in page that does not
+        // exist is worse than one wasted race.
+        val portal = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL)
+        return if (portal) Uplink.CAPTIVE else Uplink.READY
+    }
+
+    private fun airplaneMode(): Boolean = runCatching {
+        Settings.Global.getInt(application.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0
+    }.getOrDefault(false)
 }
 
 /**

@@ -40,7 +40,6 @@ zales/
 ├── tunnel/
 │   ├── api/                  TunnelEngine, TunnelState, TunnelCommand, TunnelFailure
 │   ├── engine-xray/          мост к libXray + сборщик конфигурации Xray
-│   ├── tun/                  JNI-обёртка hev-socks5-tunnel
 │   ├── autopilot/            лестница стратегий, гонка, профили сетей, сторож
 │   ├── diagnostics/          движок проб и таксономия отказов
 │   └── service/              ZalesVpnService, AIDL, плитка, приёмник загрузки
@@ -53,12 +52,11 @@ zales/
 │   └── settings/             настройки, включая «Только рубильник»
 │
 └── native/                   сборочные скрипты (Python/shell), не модуль Gradle
-    ├── libxray/              → zales-core.aar
-    └── hev/                  → libhev.so
+    └── core/                 → zales-core.aar
 ```
 
 **Правило зависимостей.** `feature/*` зависит от `core/*` и `tunnel:api`, но **никогда**
-от `tunnel:engine-xray` или `tunnel:tun`. Реализации подставляются в `app` через граф
+от `tunnel:engine-xray`. Реализации подставляются в `app` через граф
 зависимостей. Это проверяется тестом на граф модулей в CI.
 
 ---
@@ -68,7 +66,7 @@ zales/
 | Процесс | Что живёт | Почему |
 | --- | --- | --- |
 | основной | Compose UI, навигация, хранилище настроек | Быстрый холодный старт, никакого нативного кода |
-| `:tunnel` | `ZalesVpnService`, libXray, hev-socks5-tunnel, автопилот, сторож | Изоляция падений, возврат памяти при остановке, переживает смерть интерфейса |
+| `:tunnel` | `ZalesVpnService`, libXray, автопилот, сторож | Изоляция падений, возврат памяти при остановке, переживает смерть интерфейса |
 
 Общение — через **AIDL**: `ITunnelService` (команды) и `ITunnelCallback` (поток состояния).
 В основном процессе поверх AIDL лежит `TunnelController`, который отдаёт наружу обычный
@@ -89,19 +87,22 @@ zales/
   │      ↑                                          │   │        │     ├── NetworkProfile │
   │  KeyRepository ── дескриптор ключа ─────────────┼───┼───────▶│     └── Watchdog       │
   │      ↑                                          │   │        │                        │
-  │  EncryptedStore (Android Keystore)              │   │        ├── XrayEngine → libXray │
-  │                                                 │   │        └── TunBridge  → libhev  │
+  │  EncryptedStore (Android Keystore)              │   │        └── XrayEngine → libXray │
+  │                                                 │   │              (inbound «tun»)     │
   └─────────────────────────────────────────────────┘   └─────────────────────────────────┘
 ```
 
 **Внутри процесса `:tunnel`** цепочка выглядит так:
 
 ```
-VpnService.Builder → tun fd ──▶ hev-socks5-tunnel ──▶ 127.0.0.1:socksPort ──▶ Xray ──▶ застава
-                                    (C, tun2socks)         (локальный inbound)   (Go)
+VpnService.Builder → tun fd ──▶ xray.tun.fd ──▶ Xray: inbound «tun» на gVisor ──▶ застава
+                                 (из Go)                    (Go)
 ```
 
-Порт SOCKS выбирается через `getFreePorts` из libXray и слушается только на loopback.
+Между дескриптором и ядром **нет ничего** — ни tun2socks, ни локального порта
+([ADR-0007](adr/0007-native-tun-inbound.md)). Открытый SOCKS на `127.0.0.1` мог бы
+просканировать любое приложение на телефоне и опознать по нему VPN-клиент; здесь
+сканировать нечего.
 
 ---
 
@@ -172,7 +173,6 @@ Strategy, RoutingPolicy) → JSON`. Это позволяет проверять
 | Артефакт | Из чего | Чем собирается | Куда |
 | --- | --- | --- | --- |
 | `zales-core.aar` | libXray (MIT) + Xray-core (MPL-2.0) | gomobile, Go 1.24+ | GitHub Release `core-v26.9.9` |
-| `libhev.so` | hev-socks5-tunnel (MIT) | ndk-build, NDK r27+ | тот же релиз |
 
 ABI: `arm64-v8a` и `armeabi-v7a`. `x86_64` — только для отладочных сборок под эмулятор.
 

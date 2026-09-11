@@ -48,7 +48,7 @@ Zales создавался с одним конкретным пользоват
 | Область | Решение | Почему |
 | --- | --- | --- |
 | Ядро | [Xray-core](https://github.com/XTLS/Xray-core) через [libXray](https://github.com/XTLS/libXray) | Одно ядро закрывает VLESS/Reality/Vision/XHTTP **и** Shadowsocks (Outline). MIT + MPL-2.0 |
-| TUN | [hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel) | Быстрый tun2socks на C, принимает готовый fd от `VpnService`. Без второго Go-рантайма |
+| TUN | Собственный inbound `tun` в Xray на gVisor | Дескриптор от `VpnService` уходит прямо в ядро: ни tun2socks, ни локального SOCKS-порта, по которому приложение на телефоне могло бы опознать VPN |
 | UI | Kotlin + Jetpack Compose + AGSL-шейдеры | Дизеринг Байера и физика рубильника делаются на GPU |
 | Стабильность | Автопилот стратегий + сторож соединения | ТСПУ в 2026 «замораживает» сессию вместо разрыва — надо ловить и перезаходить самим |
 | Приватность | Ключ в Android Keystore, нулевая телеметрия | Сеть только через ваш туннель |
@@ -88,4 +88,4 @@ Zales создавался с одним конкретным пользоват
 собственных файлах — нет. Обоснование в [ADR-0005](docs/adr/0005-license-mpl2.md).
 
 Зависимости под своими лицензиями: Xray-core — MPL-2.0, libXray — MIT,
-hev-socks5-tunnel — MIT, шрифты Golos Text, JetBrains Mono и Caveat — SIL OFL 1.1.
+шрифты Golos Text, JetBrains Mono и Caveat — SIL OFL 1.1.

@@ -7,8 +7,9 @@
 | № | Решение | Статус |
 | --- | --- | --- |
 | [0001](0001-xray-core-only.md) | Одно ядро: Xray-core через libXray | принято |
-| [0002](0002-tun-via-hev.md) | TUN через hev-socks5-tunnel | принято |
+| [0002](0002-tun-via-hev.md) | TUN через hev-socks5-tunnel | заменено [0007](0007-native-tun-inbound.md) |
 | [0003](0003-single-go-runtime.md) | Один Go-рантайм, один AAR, сборка в CI | принято |
 | [0004](0004-separate-tunnel-process.md) | Туннель в отдельном процессе | принято |
 | [0005](0005-license-mpl2.md) | Лицензия MPL-2.0 | принято |
 | [0006](0006-agsl-dithering.md) | Дизеринг на AGSL с запасным путём | принято |
+| [0007](0007-native-tun-inbound.md) | TUN как вход самого Xray, без tun2socks | принято |

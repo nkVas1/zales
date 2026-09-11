@@ -6,6 +6,8 @@ package io.github.nkvas1.zales.tunnel.service
 
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.TrafficStats
 import android.net.VpnService
 import android.os.Build
@@ -29,11 +31,14 @@ import io.github.nkvas1.zales.tunnel.api.TunnelFailure
 import io.github.nkvas1.zales.tunnel.api.TunnelState
 import io.github.nkvas1.zales.tunnel.autopilot.AddressResolver
 import io.github.nkvas1.zales.tunnel.autopilot.Autopilot
+import io.github.nkvas1.zales.tunnel.autopilot.Backoff
 import io.github.nkvas1.zales.tunnel.autopilot.Choice
 import io.github.nkvas1.zales.tunnel.autopilot.NetworkFingerprint
 import io.github.nkvas1.zales.tunnel.autopilot.NetworkFingerprinter
 import io.github.nkvas1.zales.tunnel.autopilot.StoredNetworkProfiles
 import io.github.nkvas1.zales.tunnel.autopilot.TrafficSample
+import io.github.nkvas1.zales.tunnel.autopilot.Uplink
+import io.github.nkvas1.zales.tunnel.autopilot.UplinkProbe
 import io.github.nkvas1.zales.tunnel.autopilot.Verdict
 import io.github.nkvas1.zales.tunnel.autopilot.Watchdog
 import io.github.nkvas1.zales.tunnel.xray.XrayConfigBuilder
@@ -69,22 +74,35 @@ public class ZalesVpnService : VpnService() {
     private val state = MutableStateFlow<TunnelState>(TunnelState.Idle)
     private val listeners = RemoteCallbackList<ITunnelCallback>()
     private val watchdog = Watchdog()
+    private val backoff = Backoff()
 
     private lateinit var notification: TunnelNotification
     private lateinit var keys: KeyRepository
     private lateinit var autopilot: Autopilot
     private lateinit var fingerprinter: NetworkFingerprinter
+    private lateinit var uplink: UplinkProbe
     private lateinit var profiles: StoredNetworkProfiles
 
     private var tun: ParcelFileDescriptor? = null
     private var trafficJob: Job? = null
     private var trafficBase = Traffic.Zero
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
-    /** Held so the watchdog can start another race without waking the key store. */
+    /** Held so a recovery can start another race without waking the key store. */
     private var activeKey: AccessKey? = null
     private var activeNetwork: NetworkFingerprint = NetworkFingerprint.Unknown
     private var resolved: Pair<String, String>? = null
     private var attempt = 1
+
+    /** Races since the tunnel last made progress; the give-up budget counts these. */
+    private var races = 0
+
+    /**
+     * Bumped whenever the tunnel changes hands. Recovery can sit in a backoff
+     * for two minutes, and when it wakes the person may have closed the tunnel
+     * and opened it again; this is how that work knows it is stale.
+     */
+    private var session = 0
 
     private val binder = object : ITunnelService.Stub() {
         override fun register(callback: ITunnelCallback): TunnelStatus {
@@ -107,8 +125,10 @@ public class ZalesVpnService : VpnService() {
         notification.createChannel()
         keys = KeyRepository(File(noBackupFilesDir, KEY_STORE_FILE), KeystoreBlobCipher())
         fingerprinter = NetworkFingerprinter(this)
+        uplink = UplinkProbe(this)
         profiles = StoredNetworkProfiles(this)
         autopilot = Autopilot(engine = engine, profiles = profiles, resolver = cachingResolver())
+        watchNetwork()
         ZalesLog.info(ZalesLog.TAG_TUNNEL, "tunnel process started")
     }
 
@@ -127,10 +147,14 @@ public class ZalesVpnService : VpnService() {
 
     override fun onRevoke() {
         ZalesLog.warn(ZalesLog.TAG_TUNNEL, "VPN permission revoked, another app took the tunnel")
+        session++
         scope.launch { shutdown(TunnelState.Failed(TunnelFailure(FailureCode.SYS_02, "vpn revoked by the system"))) }
     }
 
     override fun onDestroy() {
+        networkCallback?.let { callback ->
+            runCatching { getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(callback) }
+        }
         listeners.kill()
         scope.cancel()
         super.onDestroy()
@@ -139,6 +163,7 @@ public class ZalesVpnService : VpnService() {
     // ── The state machine ──────────────────────────────────────────────
 
     private fun open() {
+        val mine = ++session
         scope.launch {
             if (state.value.isBusy) return@launch
             update(TunnelState.Preparing)
@@ -147,24 +172,54 @@ public class ZalesVpnService : VpnService() {
             activeKey = key
             activeNetwork = fingerprinter.current()
             attempt = 1
+            races = 0
             resolved = null
+            backoff.reset()
+
+            if (!uplinkReady()) return@launch
 
             // Nothing touches the interface until a real request has come back
             // through the proxy: a tunnel that opens and silently goes nowhere
             // is the worst outcome of all.
             update(TunnelState.Probing(attempt = attempt, strategy = null))
             when (val choice = autopilot.choose(key, activeNetwork)) {
-                is Choice.None -> fail(FailureCode.SRV_03, choice.detail)
-                is Choice.Found -> engage(key, choice)
+                is Choice.None -> if (session == mine) fail(FailureCode.SRV_03, choice.detail)
+                is Choice.Found -> if (session == mine) engage(key, choice)
             }
         }
     }
 
     /**
+     * Rules out the ordinary explanations before the tunnel is blamed.
+     *
+     * Racing six strategies against a phone in aeroplane mode produces six
+     * timeouts and one useless sentence; naming the aeroplane takes a moment
+     * and the person fixes it themselves.
+     */
+    private suspend fun uplinkReady(): Boolean = when (uplink.current()) {
+        Uplink.AIRPLANE -> {
+            fail(FailureCode.NET_03, "airplane mode is on")
+            false
+        }
+
+        Uplink.OFFLINE -> {
+            fail(FailureCode.NET_01, "no active network")
+            false
+        }
+
+        Uplink.CAPTIVE -> {
+            fail(FailureCode.NET_02, "network is behind a captive portal")
+            false
+        }
+
+        Uplink.READY -> true
+    }
+
+    /**
      * Raises the interface and hands its descriptor to the core.
      *
-     * The descriptor deliberately outlives a restart of the core: when the
-     * watchdog swaps strategies underneath, the person's open connections and
+     * The descriptor deliberately outlives a restart of the core: when a
+     * recovery swaps strategies underneath, the person's open connections and
      * the system's VPN indicator both survive the change.
      */
     private suspend fun engage(key: AccessKey, choice: Choice.Found) {
@@ -190,32 +245,54 @@ public class ZalesVpnService : VpnService() {
 
     /**
      * The path went quiet in the way Russian filtering makes a path go quiet.
-     * Forget what used to work here, find another way in, and swap the core
-     * over underneath the interface without ever dropping it.
+     * What worked here is discredited, and another way in is found.
      */
     private suspend fun relearn(reason: DegradeReason) {
-        val key = activeKey ?: return
         val strategy = (state.value as? TunnelState.Connected)?.strategy ?: return
         update(TunnelState.Degraded(System.currentTimeMillis(), strategy, reason, currentDelta()))
+        profiles.forget(activeNetwork)
+        reroute()
+    }
 
-        // A strategy is only discredited on the network it was chosen for. If
-        // the phone has meanwhile moved to another network, that strategy may
-        // still be the right one to come back to.
-        val here = fingerprinter.current()
-        if (here == activeNetwork) profiles.forget(activeNetwork) else activeNetwork = here
+    /**
+     * Finds another way through without ever taking the interface down.
+     *
+     * This is where the tunnel earns its keep: a failed race is not a failure
+     * but a wait, and the waits grow. The loop gives up only when the person
+     * would rather be told than kept waiting — and even then, coming back onto
+     * a network starts it again.
+     */
+    private suspend fun reroute() {
+        val key = activeKey ?: return
+        val mine = session
+        engine.stop()
+        while (currentCoroutineContext().isActive && session == mine) {
+            attempt++
+            update(TunnelState.Reconnecting(attempt))
 
-        attempt++
-        update(TunnelState.Reconnecting(attempt))
-        when (val choice = autopilot.choose(key, activeNetwork)) {
-            is Choice.None -> fail(FailureCode.DPI_01, choice.detail)
-            is Choice.Found -> {
-                engine.stop()
+            // Off the network entirely: sleep instead of thrashing the radio.
+            // The connectivity callback wakes this up the moment that changes.
+            if (uplink.current() == Uplink.OFFLINE) return
+
+            activeNetwork = fingerprinter.current()
+            val choice = autopilot.choose(key, activeNetwork)
+            if (session != mine) return
+            if (choice is Choice.Found) {
                 engage(key, choice)
+                return
             }
+
+            races++
+            if (races >= GIVE_UP_AFTER) {
+                fail(FailureCode.DPI_01, (choice as Choice.None).detail)
+                return
+            }
+            delay(backoff.nextDelayMs())
         }
     }
 
     private fun close() {
+        session++
         scope.launch { shutdown(TunnelState.Idle) }
     }
 
@@ -226,10 +303,86 @@ public class ZalesVpnService : VpnService() {
         engine.stop()
         engine.setProtector(null)
         closeDescriptor()
+        activeKey = null
         update(finalState)
         stopForeground(STOP_FOREGROUND_REMOVE)
         if (finalState !is TunnelState.Failed) stopSelf()
     }
+
+    // ── The network underneath ─────────────────────────────────────────
+
+    /**
+     * A phone walks out of Wi-Fi range several times a day. That is not a
+     * failure, it is a pause — and the far side of it is usually a different
+     * network, where a different way through may be needed.
+     */
+    private fun watchNetwork() {
+        val manager = getSystemService(ConnectivityManager::class.java) ?: return
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                scope.launch { networkArrived() }
+            }
+
+            override fun onLost(network: Network) {
+                scope.launch { networkLeft() }
+            }
+        }
+        if (runCatching { manager.registerDefaultNetworkCallback(callback) }.isSuccess) {
+            networkCallback = callback
+        }
+    }
+
+    private suspend fun networkArrived() {
+        if (activeKey == null) return
+        when (val current = state.value) {
+            // Waiting it out, or asleep in a backoff that is now pointless.
+            is TunnelState.Reconnecting -> startOver()
+
+            // Still nominally up, but on a different network than the strategy
+            // was chosen for. That strategy is not discredited — it simply may
+            // not be the right one here.
+            is TunnelState.Connected -> if (fingerprinter.current() != activeNetwork) {
+                ZalesLog.info(ZalesLog.TAG_TUNNEL, "network changed underneath a live tunnel")
+                trafficJob?.cancel()
+                val degraded = TunnelState.Degraded(
+                    sinceEpochMs = current.sinceEpochMs,
+                    strategy = current.strategy,
+                    reason = DegradeReason.STALLED,
+                    traffic = Traffic.Zero,
+                )
+                update(degraded)
+                startOver()
+            }
+
+            // The person was told there was no network. There is one now.
+            is TunnelState.Failed -> if (current.failure.code in NETWORK_FAILURES) {
+                ZalesLog.info(ZalesLog.TAG_TUNNEL, "network came back, opening again")
+                open()
+            }
+
+            else -> Unit
+        }
+    }
+
+    /** A new network deserves a clean slate: fresh address, fresh budget, fresh waits. */
+    private suspend fun startOver() {
+        resolved = null
+        races = 0
+        backoff.reset()
+        session++
+        reroute()
+    }
+
+    private suspend fun networkLeft() {
+        if (uplink.current() != Uplink.OFFLINE) return
+        if (state.value !is TunnelState.Connected && state.value !is TunnelState.Degraded) return
+        ZalesLog.info(ZalesLog.TAG_TUNNEL, "network gone, holding the interface open")
+        trafficJob?.cancel()
+        attempt++
+        update(TunnelState.Reconnecting(attempt))
+    }
+
+    // ── Keeping it alive ───────────────────────────────────────────────
 
     private suspend fun loadKey(): AccessKey? = try {
         keys.activeKey() ?: run {
@@ -267,6 +420,7 @@ public class ZalesVpnService : VpnService() {
     private fun connected(strategy: StrategyId, latencyMs: Int) {
         trafficBase = currentTraffic()
         watchdog.reset()
+        backoff.reset()
         update(
             TunnelState.Connected(
                 sinceEpochMs = System.currentTimeMillis(),
@@ -390,5 +544,14 @@ public class ZalesVpnService : VpnService() {
         private const val TUN_DNS = "10.16.0.1"
 
         private const val TRAFFIC_POLL_MS = 2_000L
+
+        /**
+         * After this many races the person is told rather than kept waiting.
+         * With the backoff between them that is around two minutes of trying.
+         */
+        private const val GIVE_UP_AFTER = 6
+
+        /** Failures that a returning network can simply undo. */
+        private val NETWORK_FAILURES = setOf(FailureCode.NET_01, FailureCode.NET_02, FailureCode.NET_03)
     }
 }
