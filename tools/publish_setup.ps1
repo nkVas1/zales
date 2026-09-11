@@ -1,4 +1,4 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
+﻿# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
@@ -8,12 +8,14 @@
 
 .DESCRIPTION
     Run this yourself, in your own terminal. It asks for the keystore and its
-    passwords, checks that they actually open it, and hands them to GitHub as
+    passwords, proves they actually open it, and hands them to GitHub as
     encrypted secrets. Nothing is written to disk, nothing is echoed, and no
     password is ever passed as a command-line argument, where the rest of the
     machine could read it out of the process list.
 
-    After this, a tag is all a release takes.
+    Saved as UTF-8 with a byte order mark on purpose: Windows PowerShell 5.1
+    reads a .ps1 without one as ANSI, which turns every Russian line in here
+    into mojibake and, worse, breaks the quoting around it.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File tools\publish_setup.ps1
@@ -30,6 +32,16 @@ function Read-Plain([System.Security.SecureString] $secure) {
     }
 }
 
+function Find-Keytool {
+    $found = Get-Command keytool -ErrorAction SilentlyContinue
+    if ($null -ne $found) { return $found.Source }
+    if ($env:JAVA_HOME) {
+        $candidate = Join-Path $env:JAVA_HOME 'bin\keytool.exe'
+        if (Test-Path -LiteralPath $candidate) { return $candidate }
+    }
+    return $null
+}
+
 Write-Host ''
 Write-Host 'Подпись релиза Zales' -ForegroundColor Cyan
 Write-Host '--------------------'
@@ -37,8 +49,25 @@ Write-Host 'Ключ никуда не копируется и нигде не �
 Write-Host 'прямо в секреты репозитория и стирается из памяти.'
 Write-Host ''
 
+$keytool = Find-Keytool
+if ($null -eq $keytool) {
+    Write-Host 'Не нашёл keytool. Он лежит в bin рядом с установленной Java.' -ForegroundColor Red
+    Write-Host 'Пропишите JAVA_HOME или добавьте его bin в PATH.' -ForegroundColor DarkGray
+    exit 1
+}
+
+$gh = Get-Command gh -ErrorAction SilentlyContinue
+if ($null -eq $gh) {
+    Write-Host 'Не нашёл gh (GitHub CLI). Поставьте его и повторите.' -ForegroundColor Red
+    exit 1
+}
+
 # ── The keystore ───────────────────────────────────────────────────────────
 $keystore = Read-Host 'Путь к файлу ключа (zales.jks)'
+if ([string]::IsNullOrWhiteSpace($keystore)) {
+    Write-Host 'Путь не введён.' -ForegroundColor Red
+    exit 1
+}
 $keystore = $keystore.Trim('"').Trim()
 if (-not (Test-Path -LiteralPath $keystore)) {
     Write-Host "Файла нет: $keystore" -ForegroundColor Red
@@ -55,34 +84,39 @@ $keySecure = Read-Host 'Пароль ключа (Enter, если тот же)' -
 $storePass = Read-Plain $storeSecure
 $keyPass = Read-Plain $keySecure
 if ([string]::IsNullOrEmpty($keyPass)) { $keyPass = $storePass }
-
-# ── Prove the passwords open it, before they become a broken release ───────
-# keytool reads these from the environment, so they never appear in the
-# process list where any other program on the machine could see them.
-$env:ZALES_SETUP_STOREPASS = $storePass
-$env:ZALES_SETUP_KEYPASS = $keyPass
-try {
-    $null = & keytool -list -v -keystore $keystore -alias $alias `
-        -storepass:env ZALES_SETUP_STOREPASS -keypass:env ZALES_SETUP_KEYPASS 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host ''
-        Write-Host 'Ключ не открылся: не тот пароль или не тот псевдоним.' -ForegroundColor Red
-        Write-Host 'Посмотреть, что внутри:  keytool -list -keystore <файл>' -ForegroundColor DarkGray
-        exit 1
-    }
-} finally {
-    Remove-Item Env:\ZALES_SETUP_STOREPASS -ErrorAction SilentlyContinue
-    Remove-Item Env:\ZALES_SETUP_KEYPASS -ErrorAction SilentlyContinue
-}
-Write-Host 'Ключ открылся.' -ForegroundColor Green
-
-# ── Hand them to GitHub ────────────────────────────────────────────────────
-$gh = Get-Command gh -ErrorAction SilentlyContinue
-if ($null -eq $gh) {
-    Write-Host 'Не найден gh (GitHub CLI). Поставьте его и повторите.' -ForegroundColor Red
+if ([string]::IsNullOrEmpty($storePass)) {
+    Write-Host 'Пароль хранилища не введён.' -ForegroundColor Red
     exit 1
 }
 
+# ── Prove both passwords work, before they become a broken release ─────────
+# A certificate request needs the private key, so it checks the key password
+# as well as the store's — which listing alone would not. keytool reads both
+# from the environment, so neither appears in the process list where any other
+# program on this machine could see it.
+$env:ZALES_SETUP_STOREPASS = $storePass
+$env:ZALES_SETUP_KEYPASS = $keyPass
+$scratch = Join-Path ([IO.Path]::GetTempPath()) ([IO.Path]::GetRandomFileName())
+try {
+    $null = & $keytool -certreq -alias $alias -keystore $keystore `
+        -storepass:env ZALES_SETUP_STOREPASS -keypass:env ZALES_SETUP_KEYPASS -file $scratch
+    $opened = ($LASTEXITCODE -eq 0)
+} finally {
+    Remove-Item Env:\ZALES_SETUP_STOREPASS -ErrorAction SilentlyContinue
+    Remove-Item Env:\ZALES_SETUP_KEYPASS -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch -Force }
+}
+
+if (-not $opened) {
+    Write-Host ''
+    Write-Host 'Ключ не открылся: не тот пароль или не тот псевдоним.' -ForegroundColor Red
+    Write-Host 'Посмотреть, какие псевдонимы внутри:' -ForegroundColor DarkGray
+    Write-Host '  keytool -list -keystore zales.jks' -ForegroundColor DarkGray
+    exit 1
+}
+Write-Host 'Ключ открылся, оба пароля верные.' -ForegroundColor Green
+
+# ── Hand them to GitHub ────────────────────────────────────────────────────
 $secrets = [ordered]@{
     'ZALES_KEYSTORE_BASE64'   = [Convert]::ToBase64String([IO.File]::ReadAllBytes($keystore))
     'ZALES_KEYSTORE_PASSWORD' = $storePass
