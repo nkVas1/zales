@@ -39,6 +39,28 @@ jobs:
         run: |
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-37.0" "build-tools;37.0.0"
 
+      # The Go artefact is large and slow to build; key the cache on its sources.
+      - name: Cache the native core
+        id: native-core
+        uses: actions/cache@v4
+        with:
+          path: native/prebuilt
+          key: zales-core-${{ runner.os }}-${{ hashFiles('native/core/**', 'native/build_core.py') }}
+
+      - name: Set up Go
+        if: steps.native-core.outputs.cache-hit != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: native/core/go.mod
+          cache-dependency-path: native/core/go.sum
+
+      - name: Build the native core
+        if: steps.native-core.outputs.cache-hit != 'true'
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          PATH="$(go env GOPATH)/bin:$PATH" python3 native/build_core.py
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
