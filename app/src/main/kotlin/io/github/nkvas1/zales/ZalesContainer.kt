@@ -26,18 +26,25 @@ public class ZalesContainer(context: Context) {
 
     private val application = context.applicationContext
 
-    public val tunnel: TunnelController = TunnelController(application)
+    // Each of these is built the first time it is asked for. Together they
+    // touch three files and the Keystore, and none of that belongs in the frame
+    // that draws the first screen — on the phone this was written for, that
+    // frame is the difference between an app that opens and one that hesitates.
 
-    public val keys: KeyRepository = KeyRepository(
-        file = File(application.noBackupFilesDir, KEY_STORE_FILE),
-        cipher = KeystoreBlobCipher(),
-    )
+    public val tunnel: TunnelController by lazy { TunnelController(application) }
 
-    public val voice: SayingVoice = SayingVoice.fromAssets(application)
+    public val keys: KeyRepository by lazy {
+        KeyRepository(
+            file = File(application.noBackupFilesDir, KEY_STORE_FILE),
+            cipher = KeystoreBlobCipher(),
+        )
+    }
 
-    public val settings: ZalesSettings = ZalesSettings(application)
+    public val voice: SayingVoice by lazy { SayingVoice.fromAssets(application) }
 
-    internal val hints: HintMemory = StoredHintMemory(application)
+    public val settings: ZalesSettings by lazy { ZalesSettings(application) }
+
+    internal val hints: HintMemory by lazy { StoredHintMemory(application) }
 
     private companion object {
         /** Must match ZalesVpnService: both processes open the same store. */

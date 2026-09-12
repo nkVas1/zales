@@ -5,9 +5,11 @@
 package io.github.nkvas1.zales.voice
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transformLatest
 
 /**
@@ -18,8 +20,18 @@ import kotlinx.coroutines.flow.transformLatest
  * it cannot flicker past during a quick transition; once shown it stays long
  * enough to be read, and it is replaced slowly (docs/VOICE.md §4.3).
  */
-public class SayingVoice(private val picker: SayingPicker) {
+public class SayingVoice(private val picker: Lazy<SayingPicker>) {
 
+    public constructor(picker: SayingPicker) : this(lazyOf(picker))
+
+    /**
+     * Moved off the main thread on purpose.
+     *
+     * The corpus is a hundred and forty lines of JSON read out of the assets,
+     * and the first line is not wanted for another second and a bit — so
+     * neither the read nor the parse has any business happening in the frame
+     * that is trying to draw the switch.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     public fun stream(mood: Flow<Mood>): Flow<Saying?> = mood.transformLatest { current ->
         if (current.stressful || current.context == null) {
@@ -29,7 +41,7 @@ public class SayingVoice(private val picker: SayingPicker) {
         emit(null)
         delay(APPEAR_AFTER_MS)
         while (true) {
-            val saying = picker.pick(current)
+            val saying = picker.value.pick(current)
             if (saying == null) {
                 emit(null)
                 return@transformLatest
@@ -37,7 +49,7 @@ public class SayingVoice(private val picker: SayingPicker) {
             emit(saying)
             delay(REPLACE_EVERY_MS)
         }
-    }
+    }.flowOn(Dispatchers.Default)
 
     public companion object {
         /** Long enough that a state passed through in a hurry never speaks. */
@@ -57,8 +69,8 @@ public class SayingVoice(private val picker: SayingPicker) {
          */
         public fun fromAssets(context: Context): SayingVoice {
             if (!speaksRussian(context)) return SayingVoice(SayingPicker(Sayings(emptyList())))
-            val corpus = context.assets.open(Sayings.ASSET).use(Sayings::read)
-            return SayingVoice(SayingPicker(corpus))
+            val assets = context.applicationContext.assets
+            return SayingVoice(lazy { SayingPicker(assets.open(Sayings.ASSET).use(Sayings::read)) })
         }
 
         private fun speaksRussian(context: Context): Boolean {
