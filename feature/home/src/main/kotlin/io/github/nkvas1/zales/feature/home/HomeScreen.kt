@@ -136,7 +136,7 @@ private fun Panel(
                 .clickable(
                     interactionSource = null,
                     indication = null,
-                    onClickLabel = SETTINGS_LABEL,
+                    onClickLabel = stringResource(R.string.a11y_open_settings),
                     onClick = onOpenSettings,
                 ),
             align = TextAlign.End,
@@ -281,5 +281,3 @@ private val ACTION_ROOM = 68.dp
 private const val LARGE_TEXT = 1.5f
 private const val CLEARING_MS = 900
 private const val CURRENT_MS = 600
-
-private const val SETTINGS_LABEL = "Настройки"

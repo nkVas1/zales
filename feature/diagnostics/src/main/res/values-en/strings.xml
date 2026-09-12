@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The steps are questions a person would have asked out loud, in the order
+    they would have asked them (docs/DIAGNOSTICS.md §4).
+-->
+<resources>
+
+    <string name="check_title">CHECKING THE PATH</string>
+    <string name="check_intro">I will go through it step by step and see where we stumble. This takes a few seconds.</string>
+
+    <string name="check_step_interface">The phone is on a network</string>
+    <string name="check_step_dns">The outpost was found by name</string>
+    <string name="check_step_tcp">The outpost answered</string>
+    <string name="check_step_transport">The handshake went through</string>
+    <string name="check_step_auth">The outpost recognised us</string>
+    <string name="check_step_http">Data is moving</string>
+    <string name="check_step_background">The phone lets me work in the background</string>
+
+    <!-- What the check found. -->
+    <string name="check_all_well">Everything is getting through now. If it was not working a moment ago, it seems to have fixed itself.</string>
+    <string name="check_again">Check again</string>
+    <string name="check_back">Back to the switch</string>
+
+    <!-- The technical block. Nobody reads it; it gets forwarded. -->
+    <string name="check_report_show">Show what to send to whoever gave you the key</string>
+    <string name="check_report_hide">Collapse</string>
+    <string name="check_report_warning">There is no key and no password in here — only what the person holding the outpost needs.</string>
+    <string name="check_report_copy">Copy</string>
+    <string name="check_report_copied">Copied. Now send it.</string>
+
+</resources>

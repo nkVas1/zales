@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -29,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import io.github.nkvas1.zales.design.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -61,7 +63,12 @@ public fun KnifeSwitch(
         Box(
             Modifier
                 .fillMaxSize()
-                .switchSemantics(closed)
+                .switchSemantics(
+                    closed = closed,
+                    name = stringResource(R.string.a11y_switch),
+                    lifted = stringResource(R.string.a11y_switch_closed),
+                    lowered = stringResource(R.string.a11y_switch_open),
+                )
                 .dragToThrow(enabled, blade, closed, haptics, onToggle)
                 .holdToThrow(enabled, blade, closed, haptics, onToggle, onHint),
         ) {
@@ -72,10 +79,15 @@ public fun KnifeSwitch(
     }
 }
 
-private fun Modifier.switchSemantics(closed: Boolean): Modifier = semantics {
+private fun Modifier.switchSemantics(
+    closed: Boolean,
+    name: String,
+    lifted: String,
+    lowered: String,
+): Modifier = semantics {
     role = Role.Switch
-    contentDescription = ACTION_DESCRIPTION
-    stateDescription = if (closed) CLOSED_DESCRIPTION else OPEN_DESCRIPTION
+    contentDescription = name
+    stateDescription = if (closed) lifted else lowered
 }
 
 private fun Modifier.dragToThrow(
@@ -205,7 +217,3 @@ private class SwitchFrameLoader {
 
 private const val MIN_FRAME_PX = 240
 private const val MAX_FRAME_PX = 1080
-
-private const val ACTION_DESCRIPTION = "Рубильник"
-private const val CLOSED_DESCRIPTION = "Поднят, тропа открыта"
-private const val OPEN_DESCRIPTION = "Опущен, тропа закрыта"

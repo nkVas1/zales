@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        localeConfig is read from Android 13 on, where it puts Zales in the
+        system's per-app language picker, and is ignored quietly before it.
+    -->
     <application
         android:name=".ZalesApp"
         android:allowBackup="false"
@@ -8,9 +13,11 @@
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
-        android:theme="@style/Theme.Zales">
+        android:theme="@style/Theme.Zales"
+        tools:targetApi="tiramisu">
 
         <activity
             android:name=".MainActivity"

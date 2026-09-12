@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    English. Not a translation of the Russian so much as the same thing said
+    again, because the rules in docs/DIAGNOSTICS.md §3 are about what a sentence
+    does, not about its words: read aloud in five seconds, no jargon, one likely
+    cause rather than a list, never the person's fault, exactly one action.
+
+    The vocabulary of the place travels with it. A server is an outpost, a
+    connection is a path, a blockage is the thicket — in Russian and in English
+    alike, because that vocabulary is the product and not decoration.
+-->
+<resources>
+
+    <!-- The one big word above the switch. -->
+    <string name="state_closed">CLOSED</string>
+    <string name="state_searching">FINDING A PATH</string>
+    <string name="state_open">OPEN</string>
+    <string name="state_narrowed">THE PATH NARROWED</string>
+    <string name="state_detour">FINDING A WAY ROUND</string>
+    <string name="state_failed">NO WAY THROUGH</string>
+    <string name="state_closing">CLOSING</string>
+
+    <!-- Trouble on this phone. -->
+    <string name="failure_net_01">The phone is not on a network. Turn on Wi-Fi or mobile data.</string>
+    <string name="failure_net_02">Wi-Fi is connected, but there is no internet behind it. Hotels and cafés do this — there is a sign-in page to open.</string>
+    <string name="failure_net_03">Aeroplane mode is on.</string>
+    <string name="failure_sys_01">Android is asking permission, and without it I cannot open the path. It is the ordinary system dialog.</string>
+    <string name="failure_sys_02">Another VPN app is running. Only one can be at a time.</string>
+    <string name="failure_sys_03">The phone put me to sleep, so the connection dropped. This is fixed once and stays fixed.</string>
+    <string name="failure_sys_04">The phone is cutting my work off in the background to save battery.</string>
+
+    <!-- Trouble with the key. -->
+    <string name="failure_key_01">I could not read this key. It looks as though it was not copied whole.</string>
+    <string name="failure_key_02">The key has no outpost address in it. Ask for it to be sent again.</string>
+    <string name="failure_key_03">The key points at a page that is not answering. This is usually temporary.</string>
+    <string name="failure_key_04">This key works by a method I cannot do yet.</string>
+    <string name="failure_key_05">There is no key yet. Paste one — it is the only thing needed.</string>
+
+    <!-- Trouble at the far end. -->
+    <string name="failure_srv_01">I cannot find the outpost by its name. Your provider may be spoiling the address book.</string>
+    <string name="failure_srv_02">The outpost says this door is shut. Something has most likely changed on the server.</string>
+    <string name="failure_srv_03">The outpost is not answering. Either it is switched off, or we are not being let through to it.</string>
+    <string name="failure_srv_04">The outpost refused the handshake. This usually means the server was updated and the key was not.</string>
+    <string name="failure_srv_05">The outpost did not recognise me. The key has most likely been revoked or has expired.</string>
+    <string name="failure_srv_06">Something has stepped between me and the outpost and is pretending to be it. It is not safe to connect.</string>
+
+    <!-- Trouble with the network in between. -->
+    <string name="failure_dpi_01">Your network is not letting this kind of connection through today. I have tried every way round I know.</string>
+    <string name="failure_dpi_02">Your provider is throttling the connection after the first few kilobytes. Moving to a method that gets round it.</string>
+    <string name="failure_dpi_03">The path is open but narrow — your provider is slowing it. I will look for a wider one.</string>
+    <string name="failure_dpi_04">This method does not get through on your mobile operator, though it is fine over Wi-Fi.</string>
+
+    <!-- Trouble inside me. -->
+    <string name="failure_int_01">Something broke inside me. That is my fault, not yours.</string>
+    <string name="failure_int_02">This build does not suit your phone. A different version of the app is needed.</string>
+    <string name="failure_int_03">I cannot open the key store. This happens after the screen lock is changed.</string>
+
+    <!-- The single action offered under each sentence. -->
+    <string name="action_open_network_settings">Open network settings</string>
+    <string name="action_open_portal">Open the sign-in page</string>
+    <string name="action_disable_airplane">Turn off aeroplane mode</string>
+    <string name="action_grant_permission">Show the dialog again</string>
+    <string name="action_show_other_vpn">Show which one</string>
+    <string name="action_walk_through">Walk me through it</string>
+    <string name="action_allow_background">Allow work in the background</string>
+    <string name="action_paste_again">Paste it again</string>
+    <string name="action_copy_request">Copy the text to send</string>
+    <string name="action_try_again">Try again</string>
+    <string name="action_show_method">Show what the method is</string>
+    <string name="action_paste_key">Paste a key</string>
+    <string name="action_try_detour">Try a way round</string>
+    <string name="action_send_report">Send the report to whoever gave you the key</string>
+    <string name="action_request_new_key">Ask for a new key</string>
+    <string name="action_show_details">Show the details</string>
+    <string name="action_show_server_advice">Show what can be changed on the server</string>
+    <string name="action_show_ask_owner">Show what to ask them for</string>
+    <string name="action_restart">Restart</string>
+    <string name="action_open_downloads">Open the downloads page</string>
+
+    <!-- What went wrong while reading a pasted key. -->
+    <string name="parse_empty">Nothing here yet. Paste a key.</string>
+    <string name="parse_unrecognized">I could not read this key. It looks as though it was not copied whole.</string>
+    <string name="parse_incomplete">A piece of the key is missing — that happens when it is not copied all the way to the end.</string>
+    <string name="parse_unsupported">This key works by a method I cannot do yet.</string>
+    <!-- Shown once, the first time a short tap is mistaken for a throw. -->
+    <string name="hint_throw">The handle has to be lifted. Drag it up with a finger, or just hold your finger on it.</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tunnel_channel_name">The state of the path</string>
+    <string name="tunnel_channel_description">Shows whether the path is open. Android requires this notification while a VPN is running.</string>
+
+    <string name="tunnel_state_preparing">Getting ready</string>
+    <string name="tunnel_state_probing">Finding a path</string>
+    <string name="tunnel_state_connected">The path is open</string>
+    <string name="tunnel_state_degraded">The path narrowed</string>
+    <string name="tunnel_state_reconnecting">Finding a way round</string>
+    <string name="tunnel_state_failed">No way through</string>
+    <string name="tunnel_state_stopping">Closing</string>
+
+    <string name="tunnel_action_close">Close</string>
+
+    <!-- The tile in the shade. The same words the big screen uses: the app must
+         not talk about itself in two different voices. -->
+    <string name="tile_name">Zales</string>
+    <string name="tile_closed">Closed</string>
+    <string name="tile_searching">Finding a path</string>
+    <string name="tile_open">Open</string>
+    <string name="tile_detour">Finding a way round</string>
+    <string name="tile_failed">No way through</string>
+    <string name="tile_closing">Closing</string>
+
+    <string name="widget_description">The switch on your home screen: one word and one touch.</string>
+</resources>

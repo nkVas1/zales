@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="a11y_switch">The switch</string>
+    <string name="a11y_switch_closed">Lifted, the path is open</string>
+    <string name="a11y_switch_open">Lowered, the path is closed</string>
+    <string name="a11y_toggle_on">On</string>
+    <string name="a11y_toggle_off">Off</string>
+</resources>

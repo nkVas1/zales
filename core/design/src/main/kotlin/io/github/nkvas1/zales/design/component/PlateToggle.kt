@@ -29,10 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import io.github.nkvas1.zales.design.R
 import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.switchboard.rememberZalesHaptics
 
@@ -53,6 +55,8 @@ public fun PlateToggle(
     modifier: Modifier = Modifier,
 ) {
     val haptics = rememberZalesHaptics()
+    val on = stringResource(R.string.a11y_toggle_on)
+    val off = stringResource(R.string.a11y_toggle_off)
     val interaction = remember { MutableInteractionSource() }
     val slide by animateFloatAsState(
         targetValue = if (checked) 1f else 0f,
@@ -73,7 +77,7 @@ public fun PlateToggle(
                 onChange(!checked)
             }
             .semantics {
-                stateDescription = if (checked) ON_DESCRIPTION else OFF_DESCRIPTION
+                stateDescription = if (checked) on else off
             }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -121,5 +125,3 @@ private val TRACK_HEIGHT = 30.dp
 private val MIN_TOUCH_TARGET = 56.dp
 private const val BOLT_FRACTION = 0.46f
 private const val INSET = 4f
-private const val ON_DESCRIPTION = "Включено"
-private const val OFF_DESCRIPTION = "Выключено"

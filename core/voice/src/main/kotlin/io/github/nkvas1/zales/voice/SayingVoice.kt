@@ -46,9 +46,27 @@ public class SayingVoice(private val picker: SayingPicker) {
         /** Comfortably longer than it takes to read a short line twice. */
         public const val REPLACE_EVERY_MS: Long = 9_000
 
+        /**
+         * Loads the corpus, unless the phone is not reading Russian.
+         *
+         * The sayings are Russian folk idiom — half of them are proverbs bent
+         * out of shape, and the joke is in the bending. Translated they would
+         * be twee, and a VPN that is twee in a hard moment is worse than a VPN
+         * that says nothing. So outside Russian the app keeps quiet, and the
+         * small grey line simply never appears.
+         */
         public fun fromAssets(context: Context): SayingVoice {
+            if (!speaksRussian(context)) return SayingVoice(SayingPicker(Sayings(emptyList())))
             val corpus = context.assets.open(Sayings.ASSET).use(Sayings::read)
             return SayingVoice(SayingPicker(corpus))
         }
+
+        private fun speaksRussian(context: Context): Boolean {
+            val locales = context.resources.configuration.locales
+            if (locales.isEmpty) return false
+            return locales.get(0).language == RUSSIAN
+        }
+
+        private const val RUSSIAN = "ru"
     }
 }

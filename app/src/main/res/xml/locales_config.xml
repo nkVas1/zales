@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The languages this app is actually written in, declared so Android can offer
+    the per-app language picker from 13 onwards. Russian is the source: the
+    voice was written in it, and the English is the same thing said again rather
+    than a translation of it.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="ru" />
+    <locale android:name="en" />
+</locale-config>

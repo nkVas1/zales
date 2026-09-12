@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Шильдик в углу — единственная дверь в настройки, и для TalkBack он
+         должен называться дверью, а не номером версии. -->
+    <string name="a11y_open_settings">Настройки</string>
+</resources>

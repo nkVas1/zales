@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Всё, что произносит TalkBack про элементы управления. Держится в ресурсах, а
+    не в коде, по той же причине, что и остальной текст: это то, что человек
+    слышит вместо экрана, и переводить его задним числом поздно.
+-->
+<resources>
+    <string name="a11y_switch">Рубильник</string>
+    <string name="a11y_switch_closed">Поднят, тропа открыта</string>
+    <string name="a11y_switch_open">Опущен, тропа закрыта</string>
+    <string name="a11y_toggle_on">Включено</string>
+    <string name="a11y_toggle_off">Выключено</string>
+</resources>

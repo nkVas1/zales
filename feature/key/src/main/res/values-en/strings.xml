@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_title">Key</string>
+    <string name="key_explanation">Paste the key you were given here. It is long and starts with vless:// or ss:// — that is normal. Paste it whole, along with any text around it.</string>
+    <string name="key_clipboard_noticed">It looks as though you have already copied a key.</string>
+    <string name="key_paste_clipboard">Paste what was copied</string>
+    <string name="key_save">Save the key</string>
+    <string name="key_stored">Saved keys</string>
+    <string name="key_forget">Forget</string>
+    <string name="key_insecure">This key does not check that the outpost is really the outpost.</string>
+    <string name="key_accepted">Key accepted.</string>
+    <string name="key_accepted_many">Keys accepted: %1$d</string>
+    <string name="key_fetching">Fetching the settings from the link…</string>
+    <string name="key_fetch_failed">The link is not answering. This is usually temporary.</string>
+    <!-- Handing a key on: one phone shows, the other looks. -->
+    <string name="key_scan">Read it with the camera</string>
+    <string name="key_scan_picture">Find it in a picture</string>
+    <string name="key_handoff">Hand it to another phone</string>
+    <string name="key_handoff_explain">Point the other phone\'s camera at this picture. Nothing has to be typed.</string>
+    <string name="key_handoff_too_big">This key is too long to fit in a picture. It will have to be sent as text.</string>
+    <string name="key_handoff_close">Put it away</string>
+    <string name="key_qr_not_found">There is no code in that picture. Try another, or paste the key as text.</string>
+    <string name="key_camera_refused">Without the camera the code cannot be read. You can paste the key as text — it comes to the same thing.</string>
+    <string name="key_camera_back">Go back</string>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Settings. Few on purpose: each one is here because a real person would ask
+    for it out loud (docs/DESIGN.md §11).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_back">Back to the switch</string>
+
+    <string name="settings_only_switch">The switch and nothing else</string>
+    <string name="settings_only_switch_explain">Hide everything on the screen but the switch. The key stays where it is, but it can no longer be deleted by accident.</string>
+
+    <string name="settings_sayings">Small talk</string>
+    <string name="settings_sayings_explain">Short living phrases in small type, in the quiet moments. There are none in a hard moment.</string>
+
+    <string name="settings_bypass">Russian sites around the path</string>
+    <string name="settings_bypass_explain">Banks and government services often refuse a visitor arriving from far away. This way they see an ordinary address from home.</string>
+
+    <string name="settings_updates">Check for updates</string>
+    <string name="settings_updates_explain">Ask GitHub once a day whether a newer build exists. Nothing about you is sent.</string>
+
+    <string name="settings_always_on">Keep the path always open</string>
+    <string name="settings_always_on_explain">Android can open the path by itself every time the phone starts, and let nothing out around it. Set once, and it is the most useful thing that can be done here at all.</string>
+    <string name="settings_always_on_show">Show where to tap</string>
+    <string name="settings_always_on_hide">Collapse</string>
+    <string name="settings_always_on_go">Open system settings</string>
+    <string name="settings_always_on_step_1">1. Tap the button below — the system list of VPNs opens.</string>
+    <string name="settings_always_on_step_2">2. Next to the line that says Zales, tap the gear. On Samsung phones the line is named the same and the gear is on the right.</string>
+    <string name="settings_always_on_step_3">3. Turn on Always-on VPN.</string>
+    <string name="settings_always_on_step_4">4. Then turn on Block connections without VPN. Without that one, the phone gets out to the network around the path in the first seconds after it starts.</string>
+    <string name="settings_always_on_warning">While the path is always open, there is no internet at all without it. If the key stops working, turn it off in the same place.</string>
+
+    <string name="settings_check_path">Check the path</string>
+    <string name="settings_check_path_explain">Go through it step by step and see where we stumble. Useful when something is not working right.</string>
+
+    <string name="settings_update_look">Check now</string>
+    <string name="settings_update_looking">Asking…</string>
+    <string name="settings_update_current">You have the latest build.</string>
+    <string name="settings_update_newer">Version %1$s is out. You can update.</string>
+    <string name="settings_update_open">Open the downloads page</string>
+    <string name="settings_update_unreachable">I could not ask — there seems to be no connection to GitHub right now.</string>
+
+    <string name="settings_privacy">What the app knows about you</string>
+    <string name="settings_privacy_explain">The short answer is almost nothing, and none of it goes anywhere. The long one opens at the button: every claim there names the file you can check it in.</string>
+    <string name="settings_privacy_open">Open</string>
+
+    <string name="settings_version">Zales %1$s</string>
+    <!-- A GitHub account name, which the spell checker reads as a typo for an
+         exclamation mark. It is neither a word nor a mistake. -->
+    <string name="settings_source" tools:ignore="Typos">Source is open: github.com/nkVas1/zales</string>
+
+    <!-- For someone whose tunnel is down and who is already upset. Three steps,
+         in order, no branches and no choices. -->
+    <string name="settings_stuck">What to do if it is not working</string>
+    <string name="settings_stuck_explain">Three steps in order. It rarely goes past the first.</string>
+    <string name="settings_stuck_show">Show the three steps</string>
+    <string name="settings_stuck_hide">Collapse</string>
+    <string name="settings_stuck_1">First. Lower the switch and lift it again. More than half of it ends here.</string>
+    <string name="settings_stuck_2">Second. Tap Check the path. I will go through it step by step and say in one sentence where we stumbled.</string>
+    <string name="settings_stuck_3">Third. If that did not help either — at the bottom of the check there is a Copy button. Send what it copies to whoever gave you the key: everything they need is in it, and nothing else.</string>
+    <string name="settings_stuck_calm">Nothing irreversible has happened. The key is where it was, the phone is fine, the internet has not gone anywhere — it is only the path that is not getting through.</string>
+
+</resources>
