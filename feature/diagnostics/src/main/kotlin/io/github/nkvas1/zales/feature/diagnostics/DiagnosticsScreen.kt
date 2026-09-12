@@ -87,9 +87,17 @@ public fun DiagnosticsScreen(
 
         Spacer(Modifier.height(4.dp))
         if (state.finished) {
-            PlateButton(text = stringResource(R.string.check_again), onClick = onRepeat)
+            PlateButton(
+                text = stringResource(R.string.check_again),
+                onClick = onRepeat,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
-        PlateButton(text = stringResource(R.string.check_back), onClick = onLeave)
+        PlateButton(
+            text = stringResource(R.string.check_back),
+            onClick = onLeave,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -162,7 +170,11 @@ private fun Verdict(state: DiagnosticsUiState, onAction: (FailureAction) -> Unit
     }
     ZalesText(text = stringResource(Words.sentence(code)), style = Zales.type.body, color = Zales.colors.bone)
     Words.action(code)?.let { action ->
-        PlateButton(text = stringResource(action.label), onClick = { onAction(action) })
+        PlateButton(
+            text = stringResource(action.label),
+            onClick = { onAction(action) },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -177,6 +189,7 @@ private fun TechnicalBlock(state: DiagnosticsUiState, onToggle: () -> Unit, onCo
     PlateButton(
         text = stringResource(if (state.reportOpen) R.string.check_report_hide else R.string.check_report_show),
         onClick = onToggle,
+        modifier = Modifier.fillMaxWidth(),
     )
     if (!state.reportOpen) return
 
@@ -198,7 +211,11 @@ private fun TechnicalBlock(state: DiagnosticsUiState, onToggle: () -> Unit, onCo
             .horizontalScroll(rememberScrollState()),
         align = TextAlign.Start,
     )
-    PlateButton(text = stringResource(R.string.check_report_copy), onClick = onCopy)
+    PlateButton(
+        text = stringResource(R.string.check_report_copy),
+        onClick = onCopy,
+        modifier = Modifier.fillMaxWidth(),
+    )
     if (state.reportCopied) {
         ZalesText(
             text = stringResource(R.string.check_report_copied),

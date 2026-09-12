@@ -109,7 +109,11 @@ private fun Handoff(state: KeyUiState, onClose: () -> Unit) {
         val grid = remember(text) { Qr.encode(text) }
         grid?.let { QrPlate(it) }
     }
-    PlateButton(text = stringResource(R.string.key_handoff_close), onClick = onClose)
+    PlateButton(
+        text = stringResource(R.string.key_handoff_close),
+        onClick = onClose,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable
@@ -145,8 +149,16 @@ private fun Paperwork(
         // Offered before the field, because a key nearly always arrives as a
         // picture on someone else's screen or in a messenger, not as text
         // anybody would want to retype.
-        PlateButton(text = stringResource(R.string.key_scan), onClick = onScan)
-        PlateButton(text = stringResource(R.string.key_scan_picture), onClick = onPickPicture)
+        PlateButton(
+            text = stringResource(R.string.key_scan),
+            onClick = onScan,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        PlateButton(
+            text = stringResource(R.string.key_scan_picture),
+            onClick = onPickPicture,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         BasicTextField(
             value = state.text,
@@ -167,20 +179,26 @@ private fun Paperwork(
             text = stringResource(R.string.key_save),
             onClick = onSave,
             enabled = state.text.text.isNotBlank() && !state.busy,
+            modifier = Modifier.fillMaxWidth(),
         )
 
-        if (state.stored.isNotEmpty()) {
-            Spacer(Modifier.heightIn(min = 8.dp))
-            ZalesText(text = stringResource(R.string.key_stored), style = Zales.type.caption, color = Zales.colors.rime)
-            state.stored.forEach { key ->
-                StoredKeyRow(
-                    key = key,
-                    guarded = state.guarded,
-                    onForget = { onForget(key.id) },
-                    onHandoff = { onHandoff(key.id) },
-                )
-            }
-        }
+        StoredKeys(state, onForget, onHandoff)
+    }
+}
+
+/** What is already saved. Absent entirely until there is something to show. */
+@Composable
+private fun StoredKeys(state: KeyUiState, onForget: (String) -> Unit, onHandoff: (String) -> Unit) {
+    if (state.stored.isEmpty()) return
+    Spacer(Modifier.heightIn(min = 8.dp))
+    ZalesText(text = stringResource(R.string.key_stored), style = Zales.type.caption, color = Zales.colors.rime)
+    state.stored.forEach { key ->
+        StoredKeyRow(
+            key = key,
+            guarded = state.guarded,
+            onForget = { onForget(key.id) },
+            onHandoff = { onHandoff(key.id) },
+        )
     }
 }
 
@@ -193,7 +211,11 @@ private fun ClipboardOffer(offered: Boolean, onPaste: () -> Unit) {
         style = Zales.type.caption,
         color = Zales.colors.lamp,
     )
-    PlateButton(text = stringResource(R.string.key_paste_clipboard), onClick = onPaste)
+    PlateButton(
+        text = stringResource(R.string.key_paste_clipboard),
+        onClick = onPaste,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** What the last save did, said plainly. */
@@ -236,9 +258,17 @@ private fun StoredKeyRow(
                 color = Zales.colors.rust,
             )
         }
-        PlateButton(text = stringResource(R.string.key_handoff), onClick = onHandoff)
+        PlateButton(
+            text = stringResource(R.string.key_handoff),
+            onClick = onHandoff,
+            modifier = Modifier.fillMaxWidth(),
+        )
         if (!guarded) {
-            PlateButton(text = stringResource(R.string.key_forget), onClick = onForget)
+            PlateButton(
+                text = stringResource(R.string.key_forget),
+                onClick = onForget,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

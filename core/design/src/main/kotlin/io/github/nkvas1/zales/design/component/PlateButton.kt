@@ -27,11 +27,16 @@ import io.github.nkvas1.zales.design.Zales
 import io.github.nkvas1.zales.design.switchboard.rememberZalesHaptics
 
 /**
- * The only button in the app: a small engraved plate screwed to the panel.
+ * The only button in the app: an engraved plate screwed to the panel.
  *
  * Deliberately unlike a Material button — no ripple, no elevation, no rounded
  * pill. It presses in, it is at least 56dp tall so that an unsteady hand finds
  * it, and it answers with a tick.
+ *
+ * Plates in a column are all the same width. Sized to their own text they come
+ * out ragged, which reads as unfinished rather than as deliberate — and the
+ * wider target is the friendlier one for the hand this was built for. A button
+ * standing on its own still takes only the room it needs.
  */
 @Composable
 public fun PlateButton(

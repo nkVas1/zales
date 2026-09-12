@@ -60,30 +60,7 @@ public fun SettingsScreen(
     ) {
         ZalesText(text = stringResource(R.string.settings_title), style = Zales.type.title, color = Zales.colors.bone)
 
-        PlateToggle(
-            title = stringResource(R.string.settings_only_switch),
-            explanation = stringResource(R.string.settings_only_switch_explain),
-            checked = preferences.onlyTheSwitch,
-            onChange = { onChange(preferences.copy(onlyTheSwitch = it)) },
-        )
-        PlateToggle(
-            title = stringResource(R.string.settings_sayings),
-            explanation = stringResource(R.string.settings_sayings_explain),
-            checked = preferences.sayings,
-            onChange = { onChange(preferences.copy(sayings = it)) },
-        )
-        PlateToggle(
-            title = stringResource(R.string.settings_bypass),
-            explanation = stringResource(R.string.settings_bypass_explain),
-            checked = preferences.bypassDomestic,
-            onChange = { onChange(preferences.copy(bypassDomestic = it)) },
-        )
-        PlateToggle(
-            title = stringResource(R.string.settings_updates),
-            explanation = stringResource(R.string.settings_updates_explain),
-            checked = preferences.checkForUpdates,
-            onChange = { onChange(preferences.copy(checkForUpdates = it)) },
-        )
+        Switches(preferences, onChange)
 
         Spacer(Modifier.height(8.dp))
         Stuck(onCheckPath)
@@ -105,8 +82,41 @@ public fun SettingsScreen(
         )
 
         Spacer(Modifier.height(8.dp))
-        PlateButton(text = stringResource(R.string.settings_back), onClick = onLeave)
+        PlateButton(
+            text = stringResource(R.string.settings_back),
+            onClick = onLeave,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
+}
+
+/** The four things a person can turn on and off, and nothing else. */
+@Composable
+private fun Switches(preferences: Preferences, onChange: (Preferences) -> Unit) {
+    PlateToggle(
+        title = stringResource(R.string.settings_only_switch),
+        explanation = stringResource(R.string.settings_only_switch_explain),
+        checked = preferences.onlyTheSwitch,
+        onChange = { onChange(preferences.copy(onlyTheSwitch = it)) },
+    )
+    PlateToggle(
+        title = stringResource(R.string.settings_sayings),
+        explanation = stringResource(R.string.settings_sayings_explain),
+        checked = preferences.sayings,
+        onChange = { onChange(preferences.copy(sayings = it)) },
+    )
+    PlateToggle(
+        title = stringResource(R.string.settings_bypass),
+        explanation = stringResource(R.string.settings_bypass_explain),
+        checked = preferences.bypassDomestic,
+        onChange = { onChange(preferences.copy(bypassDomestic = it)) },
+    )
+    PlateToggle(
+        title = stringResource(R.string.settings_updates),
+        explanation = stringResource(R.string.settings_updates_explain),
+        checked = preferences.checkForUpdates,
+        onChange = { onChange(preferences.copy(checkForUpdates = it)) },
+    )
 }
 
 /**
@@ -130,6 +140,7 @@ private fun AlwaysOn(onOpen: () -> Unit) {
         PlateButton(
             text = stringResource(if (open) R.string.settings_always_on_hide else R.string.settings_always_on_show),
             onClick = { open = !open },
+            modifier = Modifier.fillMaxWidth(),
         )
         if (!open) return@Section
 
@@ -146,7 +157,11 @@ private fun AlwaysOn(onOpen: () -> Unit) {
             style = Zales.type.caption,
             color = Zales.colors.rust,
         )
-        PlateButton(text = stringResource(R.string.settings_always_on_go), onClick = onOpen)
+        PlateButton(
+            text = stringResource(R.string.settings_always_on_go),
+            onClick = onOpen,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -167,6 +182,7 @@ private fun Stuck(onCheckPath: () -> Unit) {
         PlateButton(
             text = stringResource(if (open) R.string.settings_stuck_hide else R.string.settings_stuck_show),
             onClick = { open = !open },
+            modifier = Modifier.fillMaxWidth(),
         )
         if (!open) return@Section
 
@@ -182,7 +198,11 @@ private fun Stuck(onCheckPath: () -> Unit) {
         ).forEach { step ->
             ZalesText(text = stringResource(step), style = Zales.type.body, color = Zales.colors.bone)
         }
-        PlateButton(text = stringResource(R.string.settings_check_path), onClick = onCheckPath)
+        PlateButton(
+            text = stringResource(R.string.settings_check_path),
+            onClick = onCheckPath,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -209,7 +229,11 @@ private fun PathCheck(onCheck: () -> Unit) {
         title = stringResource(R.string.settings_check_path),
         explanation = stringResource(R.string.settings_check_path_explain),
     ) {
-        PlateButton(text = stringResource(R.string.settings_check_path), onClick = onCheck)
+        PlateButton(
+            text = stringResource(R.string.settings_check_path),
+            onClick = onCheck,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -226,12 +250,17 @@ private fun Updates(state: UpdateState, onCheck: () -> Unit, onOpen: (String) ->
         },
     ) {
         if (state is UpdateState.Newer) {
-            PlateButton(text = stringResource(R.string.settings_update_open), onClick = { onOpen(state.page) })
+            PlateButton(
+                text = stringResource(R.string.settings_update_open),
+                onClick = { onOpen(state.page) },
+                modifier = Modifier.fillMaxWidth(),
+            )
         } else {
             PlateButton(
                 text = stringResource(R.string.settings_update_look),
                 onClick = onCheck,
                 enabled = state != UpdateState.Looking,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
