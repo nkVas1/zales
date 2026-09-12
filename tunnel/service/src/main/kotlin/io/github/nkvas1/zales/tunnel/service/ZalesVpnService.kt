@@ -51,6 +51,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -96,6 +97,17 @@ public class ZalesVpnService : VpnService() {
     private var trafficBase = Traffic.Zero
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var checkJob: Job? = null
+
+    /**
+     * Finding another way through, on a job of its own.
+     *
+     * Not on the traffic job, which is where the watchdog that starts it lives:
+     * that job is cancelled for reasons that have nothing to do with recovery —
+     * a path check beginning, a network dropping — and a reroute cut off part
+     * way leaves the core stopped under a live interface. Having its own job
+     * also means two recoveries can never be in flight at once.
+     */
+    private var recoveryJob: Job? = null
 
     /** Held so a recovery can start another race without waking the key store. */
     private var activeKey: AccessKey? = null
@@ -283,6 +295,12 @@ public class ZalesVpnService : VpnService() {
      * The path went quiet in the way Russian filtering makes a path go quiet.
      * What worked here is discredited, and another way in is found.
      */
+    /** Starts a recovery, replacing any that was already running. */
+    private fun recover(work: suspend () -> Unit) {
+        recoveryJob?.cancel()
+        recoveryJob = scope.launch { work() }
+    }
+
     private suspend fun relearn(reason: DegradeReason) {
         val strategy = (state.value as? TunnelState.Connected)?.strategy ?: return
         update(TunnelState.Degraded(System.currentTimeMillis(), strategy, reason, currentDelta()))
@@ -356,6 +374,9 @@ public class ZalesVpnService : VpnService() {
     private suspend fun shutdown(finalState: TunnelState) {
         if (state.value == TunnelState.Idle) return
         update(TunnelState.Stopping)
+        // A recovery still looking for a way through would otherwise reopen the
+        // tunnel a moment after the person closed it.
+        recoveryJob?.cancel()
         trafficJob?.cancel()
         engine.stop()
         engine.setProtector(null)
@@ -394,7 +415,7 @@ public class ZalesVpnService : VpnService() {
         if (activeKey == null) return
         when (val current = state.value) {
             // Waiting it out, or asleep in a backoff that is now pointless.
-            is TunnelState.Reconnecting -> startOver()
+            is TunnelState.Reconnecting -> recover { startOver() }
 
             // Still nominally up, but on a different network than the strategy
             // was chosen for. That strategy is not discredited — it simply may
@@ -409,7 +430,7 @@ public class ZalesVpnService : VpnService() {
                     traffic = Traffic.Zero,
                 )
                 update(degraded)
-                startOver()
+                recover { startOver() }
             }
 
             // The person was told there was no network. There is one now.
@@ -506,7 +527,7 @@ public class ZalesVpnService : VpnService() {
                 Verdict.HEALTHY, Verdict.SUSPICIOUS -> Unit
                 Verdict.STALLED -> {
                     ZalesLog.warn(ZalesLog.TAG_TUNNEL, "traffic frozen, looking for another way through")
-                    relearn(DegradeReason.STALLED)
+                    recover { relearn(DegradeReason.STALLED) }
                     return
                 }
             }
@@ -551,6 +572,11 @@ public class ZalesVpnService : VpnService() {
     private suspend fun fail(code: FailureCode, detail: String) {
         ZalesLog.warn(ZalesLog.TAG_TUNNEL, "tunnel failed: ${code.printable}")
         survival.markStopped()
+        // Not recoveryJob.cancel(): giving up is most often decided *inside* a
+        // recovery, and a coroutine that cancels its own job is racing its own
+        // last few lines. Bumping the session says the same thing without that
+        // — anything still in flight sees it is stale at its next look.
+        session++
         trafficJob?.cancel()
         engine.stop()
         engine.setProtector(null)
@@ -590,19 +616,34 @@ public class ZalesVpnService : VpnService() {
             // steps aside for the few seconds of the check and is put back
             // afterwards, over the same interface, which never comes down.
             val resume = activeChoice.takeIf { engine.isRunning() }
+            val mine = session
             if (resume != null) {
                 trafficJob?.cancel()
                 engine.stop()
             }
 
-            pathCheck.run(subject).collect { diagnosis ->
-                broadcast(DiagnosisStatus.of(diagnosis))
-                // A check that ends clean has told the person something they can
-                // act on; the tally of unexplained deaths starts again.
-                if (diagnosis.finished && diagnosis.verdict == null) survival.forgive()
+            try {
+                pathCheck.run(subject).collect { diagnosis ->
+                    broadcast(DiagnosisStatus.of(diagnosis))
+                    // A check that ends clean has told the person something they
+                    // can act on; the tally of unexplained deaths starts again.
+                    if (diagnosis.finished && diagnosis.verdict == null) survival.forgive()
+                }
+            } finally {
+                // Whatever ends the check — finishing, or the person walking
+                // away from the screen half way through — the tunnel has to
+                // come back. Leaving here without this put the core down while
+                // the interface stayed up, which is the worst possible shape:
+                // every connection blackholes and the screen still says OPEN.
+                //
+                // NonCancellable because the usual reason for being here is
+                // that this job was cancelled, and a cancelled coroutine cannot
+                // suspend. Guarded by the session so that a check cancelled
+                // *by the person closing the tunnel* does not resurrect it.
+                if (resume != null && session == mine) {
+                    withContext(NonCancellable) { engage(subject, resume) }
+                }
             }
-
-            if (resume != null) engage(subject, resume)
         }
     }
 
