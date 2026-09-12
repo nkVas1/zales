@@ -74,7 +74,8 @@ public class KeyRepository(
      */
     public suspend fun add(text: String): AddResult = withContext(io) {
         when (val parsed = KeyParser.parse(text)) {
-            is ParseResult.Keys -> store(source = text.trim(), remoteUrl = null, count = parsed.keys.size)
+            is ParseResult.Keys ->
+                store(source = text.trim(), remoteUrl = null, count = parsed.keys.size, promote = true)
             is ParseResult.Remote -> AddResult.NeedsFetch(parsed.url, parsed.label)
             is ParseResult.Failure -> AddResult.Rejected(parsed.reason, parsed.detail)
         }
@@ -83,7 +84,8 @@ public class KeyRepository(
     /** Stores keys from a document fetched from [url]. Refreshing the same URL replaces its keys. */
     public suspend fun addRemote(url: String, document: String): AddResult = withContext(io) {
         when (val parsed = KeyParser.parseRemoteDocument(document)) {
-            is ParseResult.Keys -> store(source = document.trim(), remoteUrl = url, count = parsed.keys.size)
+            is ParseResult.Keys ->
+                store(source = document.trim(), remoteUrl = url, count = parsed.keys.size, promote = true)
             is ParseResult.Remote -> AddResult.Rejected(
                 ParseFailure.UNRECOGNIZED,
                 "remote document points to another remote"
@@ -125,21 +127,36 @@ public class KeyRepository(
         active?.resolve()
     }
 
-    private fun store(source: String, remoteUrl: String?, count: Int): AddResult = locked(write = true) {
-        val state = read()
-        val kept = if (remoteUrl != null) state.keys.filterNot { it.remoteUrl == remoteUrl } else state.keys
-        val existingSources = kept.map { it.source to it.index }.toSet()
-        val now = clock()
-        val added = (0 until count)
-            .filterNot { (source to it) in existingSources }
-            .map { index -> StoredKey(newId(), source, remoteUrl, index, now) }
-        val keys = kept + added
-        val activeId = state.activeId?.takeIf { id -> keys.any { it.id == id } }
-            ?: added.firstOrNull()?.id
-            ?: keys.firstOrNull()?.id
-        write(State(keys, activeId))
-        AddResult.Added(added.map { it.id }, duplicates = count - added.size)
-    }
+    /**
+     * Writes the keys found in [source].
+     *
+     * A newly pasted key becomes the active one. Someone who has just pasted a
+     * key means to use it, and the alternative — keeping the old one and
+     * expecting them to find a list and change it — is the kind of correctness
+     * that loses people.
+     *
+     * [promote] exists so that a future automatic refresh of a subscription can
+     * pass false: re-fetching a list in the background must not quietly change
+     * which key the person is on.
+     */
+    private fun store(source: String, remoteUrl: String?, count: Int, promote: Boolean): AddResult =
+        locked(write = true) {
+            val state = read()
+            val kept = if (remoteUrl != null) state.keys.filterNot { it.remoteUrl == remoteUrl } else state.keys
+            val existingSources = kept.map { it.source to it.index }.toSet()
+            val now = clock()
+            val added = (0 until count)
+                .filterNot { (source to it) in existingSources }
+                .map { index -> StoredKey(newId(), source, remoteUrl, index, now) }
+            val keys = kept + added
+            val chosen = added.firstOrNull()?.id?.takeIf { promote }
+            val activeId = chosen
+                ?: state.activeId?.takeIf { id -> keys.any { it.id == id } }
+                ?: added.firstOrNull()?.id
+                ?: keys.firstOrNull()?.id
+            write(State(keys, activeId))
+            AddResult.Added(added.map { it.id }, duplicates = count - added.size)
+        }
 
     /**
      * The text this key was made from, for handing it to another phone.

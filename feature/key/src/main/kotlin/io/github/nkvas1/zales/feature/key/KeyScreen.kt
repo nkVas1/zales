@@ -44,6 +44,7 @@ public fun KeyScreen(
     onPasteClipboard: () -> Unit,
     onSave: () -> Unit,
     onForget: (String) -> Unit,
+    onUse: (String) -> Unit,
     onScan: () -> Unit,
     onScanned: (String) -> Unit,
     onPickPicture: () -> Unit,
@@ -60,6 +61,7 @@ public fun KeyScreen(
             onPasteClipboard,
             onSave,
             onForget,
+            onUse,
             onScan,
             onPickPicture,
             onHandoff,
@@ -123,6 +125,7 @@ private fun Paperwork(
     onPasteClipboard: () -> Unit,
     onSave: () -> Unit,
     onForget: (String) -> Unit,
+    onUse: (String) -> Unit,
     onScan: () -> Unit,
     onPickPicture: () -> Unit,
     onHandoff: (String) -> Unit,
@@ -182,13 +185,18 @@ private fun Paperwork(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        StoredKeys(state, onForget, onHandoff)
+        StoredKeys(state, onUse, onForget, onHandoff)
     }
 }
 
 /** What is already saved. Absent entirely until there is something to show. */
 @Composable
-private fun StoredKeys(state: KeyUiState, onForget: (String) -> Unit, onHandoff: (String) -> Unit) {
+private fun StoredKeys(
+    state: KeyUiState,
+    onUse: (String) -> Unit,
+    onForget: (String) -> Unit,
+    onHandoff: (String) -> Unit,
+) {
     if (state.stored.isEmpty()) return
     Spacer(Modifier.heightIn(min = 8.dp))
     ZalesText(text = stringResource(R.string.key_stored), style = Zales.type.caption, color = Zales.colors.rime)
@@ -196,6 +204,8 @@ private fun StoredKeys(state: KeyUiState, onForget: (String) -> Unit, onHandoff:
         StoredKeyRow(
             key = key,
             guarded = state.guarded,
+            alone = state.stored.size == 1,
+            onUse = { onUse(key.id) },
             onForget = { onForget(key.id) },
             onHandoff = { onHandoff(key.id) },
         )
@@ -238,6 +248,8 @@ private fun SaveOutcome(state: KeyUiState) {
 private fun StoredKeyRow(
     key: StoredKeyView,
     guarded: Boolean,
+    alone: Boolean,
+    onUse: () -> Unit,
     onForget: () -> Unit,
     onHandoff: () -> Unit,
 ) {
@@ -251,11 +263,27 @@ private fun StoredKeyRow(
     ) {
         ZalesText(text = key.label, style = Zales.type.body, color = Zales.colors.bone)
         ZalesText(text = key.detail, style = Zales.type.nameplate, color = Zales.colors.rime)
+        // With one key there is nothing to choose between, so neither the mark
+        // nor the button appears: the screen says less when less is true.
+        if (!alone && key.active) {
+            ZalesText(
+                text = stringResource(R.string.key_in_use),
+                style = Zales.type.caption,
+                color = Zales.colors.lamp,
+            )
+        }
         if (key.insecure) {
             ZalesText(
                 text = stringResource(R.string.key_insecure),
                 style = Zales.type.caption,
                 color = Zales.colors.rust,
+            )
+        }
+        if (!alone && !key.active) {
+            PlateButton(
+                text = stringResource(R.string.key_use),
+                onClick = onUse,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         PlateButton(

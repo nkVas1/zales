@@ -32,4 +32,10 @@ interface ITunnelService {
      * been reliable on Android.
      */
     void setBypassDomestic(boolean value);
+
+    /**
+     * The stored key has changed — chosen from the list, or the one in use was
+     * forgotten. Picks up the new one without taking the interface down.
+     */
+    void usingNewKey();
 }

@@ -85,13 +85,26 @@ class KeyRepositoryTest {
     }
 
     @Test
-    fun `a second key does not steal the active slot`() = runTest {
+    fun `a key just pasted is the key in use`() = runTest {
+        // This used to keep the older key. It was defensible and it was wrong:
+        // the person it matters to is someone whose key expired and who was
+        // sent a new one. They paste it and expect it to work — not to go
+        // looking for a list and press a button in the right row.
         val repo = repo(testScheduler)
         repo.add(trojan)
         repo.add(vless)
-        assertEquals("Home", repo.summaries().first().descriptor.label)
-        assertTrue(repo.setActive("id-1"))
         assertEquals("Work", repo.summaries().first().descriptor.label)
+    }
+
+    @Test
+    fun `an older key can be chosen again`() = runTest {
+        val repo = repo(testScheduler)
+        repo.add(trojan)
+        repo.add(vless)
+
+        assertTrue(repo.setActive("id-0"))
+        assertEquals("Home", repo.summaries().first().descriptor.label)
+        assertEquals("secret-password", (repo.activeKey() as AccessKey.Trojan).password)
     }
 
     @Test

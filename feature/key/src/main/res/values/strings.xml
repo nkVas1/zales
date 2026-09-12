@@ -7,6 +7,10 @@
     <string name="key_save">Сохранить ключ</string>
     <string name="key_stored">Сохранённые ключи</string>
     <string name="key_forget">Забыть</string>
+    <!-- Появляется только когда ключей больше одного: выбирать не из чего,
+         пока ключ один. -->
+    <string name="key_use">Пользоваться этим</string>
+    <string name="key_in_use">Сейчас в ходу</string>
     <string name="key_insecure">Этот ключ не проверяет подлинность заставы.</string>
     <string name="key_accepted">Ключ принят.</string>
     <string name="key_accepted_many">Принято ключей: %1$d</string>

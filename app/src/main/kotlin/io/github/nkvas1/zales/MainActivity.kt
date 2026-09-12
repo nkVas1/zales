@@ -130,6 +130,7 @@ public class MainActivity : ComponentActivity() {
     private fun acceptLink(link: String) {
         key.onLinkOpened(link)
         home.refreshKeys()
+        container.tunnel.usingNewKey()
         opened = link
     }
 
@@ -236,15 +237,28 @@ public class MainActivity : ComponentActivity() {
             onSave = {
                 key.save()
                 home.refreshKeys()
+                // A pasted key becomes the one in use, so a tunnel that is
+                // already open moves onto it rather than carrying on with the
+                // old one behind the person's back.
+                container.tunnel.usingNewKey()
             },
             onForget = { id ->
                 key.forget(id)
                 home.refreshKeys()
+                container.tunnel.usingNewKey()
+            },
+            onUse = { id ->
+                key.use(id)
+                home.refreshKeys()
+                // The store knows which key is meant; the running core is still
+                // holding the old one, and has to be told.
+                container.tunnel.usingNewKey()
             },
             onScan = key::scan,
             onScanned = { text ->
                 key.onScanned(text)
                 home.refreshKeys()
+                container.tunnel.usingNewKey()
             },
             onPickPicture = {
                 picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

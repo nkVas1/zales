@@ -204,6 +204,19 @@ public class KeyViewModel(
         _state.update { it.copy(mode = KeyMode.TEXT, handoff = null, handoffTooBig = false) }
     }
 
+    /**
+     * Chooses which stored key the tunnel uses.
+     *
+     * Whoever is watching the tunnel is told separately: the store knows which
+     * key is meant, but the running core is holding the old one in memory.
+     */
+    public fun use(id: String) {
+        viewModelScope.launch {
+            keys.setActive(id)
+            refresh()
+        }
+    }
+
     public fun forget(id: String) {
         viewModelScope.launch {
             keys.remove(id)

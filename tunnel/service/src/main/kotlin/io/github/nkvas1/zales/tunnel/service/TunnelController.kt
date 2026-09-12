@@ -142,6 +142,16 @@ public class TunnelController(private val context: Context) {
 
     public fun bypassDomestic(): Boolean = wish.bypassDomestic
 
+    /**
+     * Tells the tunnel the stored key has changed.
+     *
+     * Harmless when nothing is running: the store is read fresh at every open,
+     * so an unbound service has nothing to correct.
+     */
+    public fun usingNewKey() {
+        runCatching { service?.usingNewKey() }
+    }
+
     public fun forgetDiagnosis() {
         checkWanted = false
         runCatching { service?.cancelDiagnosis() }

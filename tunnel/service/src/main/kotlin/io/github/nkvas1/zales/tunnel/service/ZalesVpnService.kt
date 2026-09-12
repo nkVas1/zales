@@ -149,6 +149,8 @@ public class ZalesVpnService : VpnService() {
         override fun setBypassDomestic(value: Boolean) {
             scope.launch { changeRouting(value) }
         }
+
+        override fun usingNewKey() = recover { swapKey() }
     }
 
     override fun onCreate() {
@@ -343,6 +345,34 @@ public class ZalesVpnService : VpnService() {
             }
             delay(backoff.nextDelayMs())
         }
+    }
+
+    /**
+     * Picks up a key chosen while the tunnel was already open.
+     *
+     * The interface stays exactly where it is and only the core is restarted,
+     * so the change costs a race rather than a reconnection — the same trick
+     * recovery uses, for the same reason: a person who swapped a key did not
+     * ask for their downloads to stop.
+     */
+    private suspend fun swapKey() {
+        if (!state.value.isBusy) return
+        val next = keys.activeKey()
+        if (next == null) {
+            // The last key was forgotten while the tunnel was up. There is
+            // nothing left to be open with, and saying so beats a tunnel that
+            // stays green and carries nothing.
+            fail(FailureCode.KEY_05, "the key in use was forgotten")
+            return
+        }
+        if (next == activeKey) return
+        ZalesLog.info(ZalesLog.TAG_TUNNEL, "key changed, finding a way through with the new one")
+        activeKey = next
+        resolved = null
+        races = 0
+        backoff.reset()
+        profiles.forget(activeNetwork)
+        reroute()
     }
 
     private fun routing(): RoutingPolicy = RoutingPolicy(bypassDomestic = wish.bypassDomestic)
