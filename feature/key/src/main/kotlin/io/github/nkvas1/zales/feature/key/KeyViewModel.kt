@@ -151,6 +151,21 @@ public class KeyViewModel(
         }
     }
 
+    /**
+     * A key that arrived as a link rather than as text on the clipboard.
+     *
+     * Saved straight away instead of being left in the field: someone who
+     * tapped a link has already said what they want, and showing them a filled
+     * box with a button under it asks the same question twice.
+     */
+    public fun onLinkOpened(link: String) {
+        if (link.isBlank()) return
+        _state.update {
+            it.copy(mode = KeyMode.TEXT, text = TextFieldValue(link), problem = null, acceptedCount = null)
+        }
+        save()
+    }
+
     /** Turns on the camera. Nothing is asked of the person before this moment. */
     public fun scan() {
         _state.update { it.copy(mode = KeyMode.SCAN, problem = null, acceptedCount = null) }

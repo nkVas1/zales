@@ -91,13 +91,63 @@ public class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * The last link accepted, so the screen can follow it exactly once.
+     *
+     * Compose state rather than a plain field: the composition watches it to
+     * decide where to be.
+     */
+    private var opened: String? by mutableStateOf(null)
+
+    override fun onResume() {
+        super.onResume()
+        // The tunnel process owns the same key store and may have changed it —
+        // and a person coming back from the system's VPN settings should not
+        // find a stale list waiting for them.
+        home.refreshKeys()
+        key.refresh()
+    }
+
+    /**
+     * A key link, from the intent that started us or from a later one.
+     *
+     * Read as the raw string rather than through Uri's parts: these links are
+     * not tidy URIs — an Outline key carries base64 with padding in the
+     * authority, and a fragment is a human-written label — and the parser was
+     * written to be tolerant of exactly that.
+     */
+    private fun keyFrom(intent: Intent?): String? {
+        if (intent?.action != Intent.ACTION_VIEW) return null
+        return intent.dataString?.takeIf { it.isNotBlank() }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        keyFrom(intent)?.let(::acceptLink)
+    }
+
+    private fun acceptLink(link: String) {
+        key.onLinkOpened(link)
+        home.refreshKeys()
+        opened = link
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        keyFrom(intent)?.let(::acceptLink)
+
         setContent {
             ZalesTheme {
                 var place by remember { mutableStateOf(Place.HOME) }
+
+                // A key arriving by link takes the person to the key screen, so
+                // they can see what was accepted rather than be told later.
+                LaunchedEffect(opened) {
+                    if (opened != null) place = Place.KEY
+                }
                 val homeState by home.state.collectAsStateWithLifecycle()
                 val keyState by key.state.collectAsStateWithLifecycle()
                 val event by home.event.collectAsStateWithLifecycle()

@@ -29,6 +29,27 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                A key tapped in a messenger. Copy-and-paste is the step this app
+                exists to remove, and it is the step that goes wrong: people
+                select half the link, or a messenger helpfully trims it. A tap
+                cannot be done by halves.
+
+                Other clients register the same schemes, so Android offers a
+                choice. That is correct: nothing here should quietly take over
+                a link that belongs to another app.
+            -->
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vless" />
+                <data android:scheme="ss" />
+                <data android:scheme="ssconf" />
+                <data android:scheme="trojan" />
+                <data android:scheme="vmess" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>

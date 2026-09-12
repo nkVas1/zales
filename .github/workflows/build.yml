@@ -66,6 +66,11 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
+      # A string added in one language and not the other falls back silently,
+      # and the only person who finds out is the one reading the wrong language.
+      - name: Both languages say the same things
+        run: python3 tools/check_translations.py
+
       - name: Static analysis
         run: ./gradlew detekt lint --no-daemon
 
