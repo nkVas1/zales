@@ -124,14 +124,61 @@ $secrets = [ordered]@{
     'ZALES_KEY_PASSWORD'      = $keyPass
 }
 
+# Four separate calls to GitHub over a connection that may not be steady. A
+# timeout on the fourth would otherwise leave the repository with three of the
+# four secrets set, which fails the release later and much less clearly.
+$attempts = 4
 foreach ($name in $secrets.Keys) {
-    # Through stdin, so the value is not an argument anywhere.
-    $secrets[$name] | & gh secret set $name
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Не удалось записать секрет $name" -ForegroundColor Red
+    $written = $false
+    for ($try = 1; $try -le $attempts; $try++) {
+        # Through stdin, so the value is not an argument anywhere.
+        $secrets[$name] | & gh secret set $name
+        if ($LASTEXITCODE -eq 0) {
+            $written = $true
+            break
+        }
+        if ($try -lt $attempts) {
+            $wait = $try * 3
+            Write-Host "  $name — не прошло, повтор через $wait с" -ForegroundColor DarkYellow
+            Start-Sleep -Seconds $wait
+        }
+    }
+    if (-not $written) {
+        Write-Host ''
+        Write-Host "Не удалось записать секрет $name после $attempts попыток." -ForegroundColor Red
+        Write-Host 'Похоже на связь с GitHub. Запустите скрипт ещё раз — он' -ForegroundColor DarkGray
+        Write-Host 'перезапишет то, что уже легло, и допишет остальное.' -ForegroundColor DarkGray
         exit 1
     }
     Write-Host "  $name — записан" -ForegroundColor Green
+}
+
+# Ask GitHub what it actually has, rather than trusting four exit codes. The
+# check is allowed to fail without condemning the run: a timeout here says
+# nothing about whether the secrets landed, and calling them missing on that
+# evidence would send someone chasing a problem that is not there.
+$present = $null
+for ($try = 1; $try -le 3; $try++) {
+    $listed = & gh secret list --json name --jq '.[].name'
+    if ($LASTEXITCODE -eq 0) {
+        $present = @($listed)
+        break
+    }
+    Start-Sleep -Seconds ($try * 2)
+}
+
+if ($null -eq $present) {
+    Write-Host ''
+    Write-Host 'Секреты записаны, но проверить список не вышло — связь.' -ForegroundColor DarkYellow
+    Write-Host 'Посмотреть самому:  gh secret list' -ForegroundColor DarkGray
+} else {
+    $missing = @($secrets.Keys | Where-Object { $present -notcontains $_ })
+    if ($missing.Count -gt 0) {
+        Write-Host ''
+        Write-Host ('Не хватает: ' + ($missing -join ', ')) -ForegroundColor Red
+        exit 1
+    }
+    Write-Host 'Все четыре секрета на месте.' -ForegroundColor Green
 }
 
 # ── Forget everything ──────────────────────────────────────────────────────
