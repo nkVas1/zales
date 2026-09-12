@@ -123,24 +123,7 @@ private fun Panel(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // The engraved plate in the corner is also the way into the settings.
-        // Small, out of the way, and the only door there is — which is exactly
-        // right for a screen that must not offer anyone a decision.
-        ZalesText(
-            text = state.plate,
-            style = Zales.type.nameplate,
-            color = Zales.colors.rime,
-            maxLines = 1,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClickLabel = stringResource(R.string.a11y_open_settings),
-                    onClick = onOpenSettings,
-                ),
-            align = TextAlign.End,
-        )
+        Nameplate(state, onOpenSettings)
 
         Spacer(Modifier.height(24.dp))
 
@@ -181,6 +164,37 @@ private fun Panel(
             Guidance(state, onAction)
         }
     }
+}
+
+/**
+ * The engraved plate in the corner, which is also the only way into the
+ * settings: small, out of the way, and the single door on a screen that must
+ * not offer anyone a decision.
+ *
+ * Assembled here rather than in the view model because it is the one piece of
+ * text in the app with a number formatted into it, and formatting needs a
+ * language.
+ */
+@Composable
+private fun Nameplate(state: HomeUiState, onOpenSettings: () -> Unit) {
+    val plate = state.latencyMs
+        ?.let { stringResource(R.string.plate_latency, state.plate, it) }
+        ?: state.plate
+    ZalesText(
+        text = plate,
+        style = Zales.type.nameplate,
+        color = Zales.colors.rime,
+        maxLines = 1,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = null,
+                indication = null,
+                onClickLabel = stringResource(R.string.a11y_open_settings),
+                onClick = onOpenSettings,
+            ),
+        align = TextAlign.End,
+    )
 }
 
 /**

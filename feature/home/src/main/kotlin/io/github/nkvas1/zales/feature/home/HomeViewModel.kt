@@ -30,7 +30,10 @@ import kotlin.random.Random
 public data class HomeUiState(
     val tunnel: TunnelState = TunnelState.Idle,
     /** The engraved plate in the corner: version and, once open, the delay. */
+    /** The engraved plate: the version, and nothing that needs formatting. */
     val plate: String = "",
+    /** Shown beside the version once the path is open. Null when there is none. */
+    val latencyMs: Int? = null,
     val saying: String? = null,
     val canSwitch: Boolean = false,
     val pulse: Float = 0f,
@@ -93,7 +96,9 @@ public class HomeViewModel(
         )
     }.combine(settings.preferences) { screen, preferences ->
         screen.copy(
-            plate = plateFor(screen.tunnel, bare = preferences.onlyTheSwitch),
+            latencyMs = (screen.tunnel as? TunnelState.Connected)
+                ?.latencyMs
+                ?.takeUnless { preferences.onlyTheSwitch },
             // Both a preference and a state of mind: nothing is said lightly in
             // calm mode, and nothing is ever said in a hard moment anyway.
             saying = screen.saying?.takeIf { preferences.sayings && !preferences.onlyTheSwitch },
@@ -164,12 +169,6 @@ public class HomeViewModel(
                 gaze.value = 0f
             }
         }
-    }
-
-    private fun plateFor(state: TunnelState, bare: Boolean): String = when {
-        bare -> versionName
-        state is TunnelState.Connected -> state.latencyMs?.let { "$versionName · $it мс" } ?: versionName
-        else -> versionName
     }
 
     private fun TunnelState.pulse(): Float = when (this) {

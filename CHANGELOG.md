@@ -6,7 +6,37 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- A launcher icon that is the wood itself: three ranks of spruce and a fire's
+  worth of light between the trunks, holding down to 24dp, with a themed layer
+  and the same mark on the notification, the tile and the widget.
+- English throughout. All 161 strings exist in both languages, the app declares
+  both so Android 13 and later offer the per-app language picker, and CI fails
+  a string that exists in one language and not the other. The sayings stay
+  Russian: they are folk idiom, and translated they would be twee.
+- A key sent as a link opens the app with the key already in it — no copying,
+  which is the step that goes wrong.
+- The privacy page every claim on which names the file it can be checked in,
+  linked from the settings screen.
+- Issue forms, a pull request checklist, a security policy and a code of
+  conduct, so the repository can receive strangers.
+
+### Changed
+
+- The README no longer says the project is at phase 0 with one screen.
+- R8 rules are spelled out rather than inherited from an AAR that keeps the
+  whole application package.
+- Nothing the app is made of is built until it is first asked for, and the
+  corpus of sayings is read off the main thread: the first frame no longer
+  waits on three files and the Keystore.
+
+### Fixed
+
+- `onResume` had been deleted by accident, so the key list went stale after a
+  trip to the system's VPN settings — the exact trip the always-on walkthrough
+  sends people on.
+- The latency on the nameplate said «мс» in every language.
 
 ## [0.1.0] — 2026-09-12
 
