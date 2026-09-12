@@ -8,8 +8,8 @@ android {
 
     defaultConfig {
         applicationId = "io.github.nkvas1.zales"
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2"
     }
 
     buildFeatures {

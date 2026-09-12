@@ -8,6 +8,31 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 Nothing yet.
 
+## [0.2.2] — 2026-09-12
+
+### Fixed
+
+- **A second key was a key you could not reach.** The store had always known
+  which key was in use and had always been able to change it; nothing in the
+  interface ever asked. Every stored key now offers «Пользоваться этим», the one
+  in use says so, and a tunnel that is already open moves onto the new key
+  underneath itself rather than being closed and reopened.
+- **The key screen was a door that closed behind you.** It could only be reached
+  by a failure telling you to go there, or by tapping a key link — so the moment
+  the first key worked, the screen that holds every key became unreachable. It
+  now stands at the top of the settings, above the toggles, and says which key
+  is in use without being opened.
+- **Leaving the key screen was a gesture and nothing else.** On a phone where
+  back is a swipe from the edge of the glass, that is not a door anyone finds.
+  There is a plate at the foot of the screen now, like every other screen here.
+- A key just pasted becomes the key in use. Someone who has just pasted a key
+  means to use it; keeping the old one and expecting them to find a list was
+  the kind of correctness that loses people.
+
+### Added
+
+- Screenshots in the README — six frames from a real phone.
+
 ## [0.2.1] — 2026-09-12
 
 ### Fixed
@@ -120,7 +145,8 @@ Nothing yet.
 - tun2socks removed from the living documents; it had not been in the build for
   some time ([ADR-0002](docs/adr/0002-tun-via-hev.md) superseded).
 
-[Unreleased]: https://github.com/nkVas1/zales/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/nkVas1/zales/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/nkVas1/zales/releases/tag/v0.2.2
 [0.2.1]: https://github.com/nkVas1/zales/releases/tag/v0.2.1
 [0.2.0]: https://github.com/nkVas1/zales/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nkVas1/zales/releases/tag/v0.1.0
