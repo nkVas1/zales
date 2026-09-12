@@ -50,6 +50,7 @@ public fun KeyScreen(
     onPickPicture: () -> Unit,
     onHandoff: (String) -> Unit,
     onCloseOverlay: () -> Unit,
+    onLeave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (state.mode) {
@@ -65,6 +66,7 @@ public fun KeyScreen(
             onScan,
             onPickPicture,
             onHandoff,
+            onLeave,
             modifier,
         )
     }
@@ -129,6 +131,7 @@ private fun Paperwork(
     onScan: () -> Unit,
     onPickPicture: () -> Unit,
     onHandoff: (String) -> Unit,
+    onLeave: () -> Unit,
     modifier: Modifier,
 ) {
     Column(
@@ -186,6 +189,16 @@ private fun Paperwork(
         )
 
         StoredKeys(state, onUse, onForget, onHandoff)
+
+        // Every screen here ends with a plate saying where it goes. Back was
+        // the gesture and nothing else, and on a phone where back is a swipe
+        // from the edge of the glass that is not a door somebody finds.
+        Spacer(Modifier.heightIn(min = 8.dp))
+        PlateButton(
+            text = stringResource(R.string.key_back),
+            onClick = onLeave,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

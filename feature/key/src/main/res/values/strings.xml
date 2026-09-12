@@ -5,6 +5,7 @@
     <string name="key_clipboard_noticed">Похоже, вы уже скопировали ключ.</string>
     <string name="key_paste_clipboard">Вставить скопированное</string>
     <string name="key_save">Сохранить ключ</string>
+    <string name="key_back">Назад к рубильнику</string>
     <string name="key_stored">Сохранённые ключи</string>
     <string name="key_forget">Забыть</string>
     <!-- Появляется только когда ключей больше одного: выбирать не из чего,

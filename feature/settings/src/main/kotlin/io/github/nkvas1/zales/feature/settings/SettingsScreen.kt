@@ -41,11 +41,14 @@ public fun SettingsScreen(
     preferences: Preferences,
     update: UpdateState,
     version: String,
+    keyInUse: String?,
+    keyCount: Int,
     onChange: (Preferences) -> Unit,
     onCheckUpdate: () -> Unit,
     onBrowse: (String) -> Unit,
     onAlwaysOn: () -> Unit,
     onCheckPath: () -> Unit,
+    onOpenKeys: () -> Unit,
     onLeave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -59,6 +62,9 @@ public fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         ZalesText(text = stringResource(R.string.settings_title), style = Zales.type.title, color = Zales.colors.bone)
+
+        Keys(keyInUse, keyCount, onOpenKeys)
+        Spacer(Modifier.height(8.dp))
 
         Switches(preferences, onChange)
 
@@ -85,6 +91,33 @@ public fun SettingsScreen(
         PlateButton(
             text = stringResource(R.string.settings_back),
             onClick = onLeave,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+/**
+ * The key, and the only way back to it.
+ *
+ * Everything else on this screen is something a person might change one day.
+ * This is the one row somebody opens settings *for* — a new key arrived, or the
+ * old one stopped working — so it stands above the toggles rather than among
+ * them. The name of the key in use is on the row itself, because "which key am
+ * I on" is the question being asked, and answering it should not need a tap.
+ */
+@Composable
+private fun Keys(inUse: String?, count: Int, onOpen: () -> Unit) {
+    Section(
+        title = stringResource(R.string.settings_keys),
+        explanation = when {
+            inUse == null -> stringResource(R.string.settings_keys_none)
+            count > 1 -> stringResource(R.string.settings_keys_several, inUse)
+            else -> stringResource(R.string.settings_keys_one, inUse)
+        },
+    ) {
+        PlateButton(
+            text = stringResource(if (inUse == null) R.string.settings_keys_paste else R.string.settings_keys_open),
+            onClick = onOpen,
             modifier = Modifier.fillMaxWidth(),
         )
     }

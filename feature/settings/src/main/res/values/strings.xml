@@ -8,6 +8,14 @@
     <string name="settings_title">НАСТРОЙКИ</string>
     <string name="settings_back">Назад к рубильнику</string>
 
+    <!-- Единственная строка, ради которой сюда заходят нарочно: ключ. -->
+    <string name="settings_keys">Ключ</string>
+    <string name="settings_keys_none">Ключа пока нет. Без него тропа не откроется.</string>
+    <string name="settings_keys_one">Сейчас в ходу «%1$s». Здесь же можно вставить другой или передать этот на второй телефон.</string>
+    <string name="settings_keys_several">Сейчас в ходу «%1$s». Другие ключи тоже сохранены — можно вернуться к любому.</string>
+    <string name="settings_keys_open">Показать ключи</string>
+    <string name="settings_keys_paste">Вставить ключ</string>
+
     <string name="settings_only_switch">Только рубильник</string>
     <string name="settings_only_switch_explain">Убрать с экрана всё, кроме рубильника. Ключ останется на месте, но случайно его уже не удалить.</string>
 

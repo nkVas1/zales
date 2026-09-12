@@ -200,10 +200,13 @@ public class MainActivity : ComponentActivity() {
     private fun SettingsPlace(go: (Place) -> Unit) {
         val current by preferences.preferences.collectAsStateWithLifecycle()
         val update by preferences.update.collectAsStateWithLifecycle()
+        val stored by key.state.collectAsStateWithLifecycle()
         SettingsScreen(
             preferences = current,
             update = update,
             version = BuildConfig.VERSION_NAME,
+            keyInUse = stored.stored.firstOrNull { it.active }?.label,
+            keyCount = stored.stored.size,
             onChange = preferences::apply,
             onCheckUpdate = preferences::checkForUpdate,
             onBrowse = ::browse,
@@ -212,6 +215,7 @@ public class MainActivity : ComponentActivity() {
                 check.start()
                 go(Place.CHECK)
             },
+            onOpenKeys = { go(Place.KEY) },
             onLeave = { go(Place.HOME) },
         )
         BackHandler { go(Place.HOME) }
@@ -265,6 +269,7 @@ public class MainActivity : ComponentActivity() {
             },
             onHandoff = key::showHandoff,
             onCloseOverlay = key::closeOverlay,
+            onLeave = { go(Place.HOME) },
             modifier = Modifier,
         )
         BackHandler {

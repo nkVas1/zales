@@ -8,6 +8,13 @@
     <string name="settings_title">SETTINGS</string>
     <string name="settings_back">Back to the switch</string>
 
+    <string name="settings_keys">Key</string>
+    <string name="settings_keys_none">No key yet. The path will not open without one.</string>
+    <string name="settings_keys_one">Using «%1$s». You can paste another here, or hand this one to a second phone.</string>
+    <string name="settings_keys_several">Using «%1$s». The other keys are kept too — you can go back to any of them.</string>
+    <string name="settings_keys_open">Show the keys</string>
+    <string name="settings_keys_paste">Paste a key</string>
+
     <string name="settings_only_switch">The switch and nothing else</string>
     <string name="settings_only_switch_explain">Hide everything on the screen but the switch. The key stays where it is, but it can no longer be deleted by accident.</string>
 

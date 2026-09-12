@@ -5,6 +5,7 @@
     <string name="key_clipboard_noticed">It looks as though you have already copied a key.</string>
     <string name="key_paste_clipboard">Paste what was copied</string>
     <string name="key_save">Save the key</string>
+    <string name="key_back">Back to the switch</string>
     <string name="key_stored">Saved keys</string>
     <string name="key_forget">Forget</string>
     <!-- Only ever shown when there is more than one key: there is nothing to
