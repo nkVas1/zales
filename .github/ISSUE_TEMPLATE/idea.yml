@@ -1,0 +1,25 @@
+name: Предложение
+description: Чего не хватает
+labels: ["предложение"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        В Zales один экран и один рубильник — и это решение, а не недоделка.
+        Настройка, о которой живой человек не попросил бы вслух, сюда не попадёт
+        ([DESIGN.md](https://github.com/nkVas1/zales/blob/main/docs/DESIGN.md)).
+        Это не значит «не предлагайте» — это значит, что важнее рассказать
+        **про случай**, а не про кнопку.
+
+  - type: textarea
+    id: case
+    attributes:
+      label: Что вы пытались сделать
+      description: Живой случай, а не формулировка функции.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Как это могло бы выглядеть

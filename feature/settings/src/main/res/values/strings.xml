@@ -41,6 +41,10 @@
     <string name="settings_update_open">Открыть страницу загрузки</string>
     <string name="settings_update_unreachable">Не смог спросить — похоже, сейчас нет связи с GitHub.</string>
 
+    <string name="settings_privacy">Что приложение знает о вас</string>
+    <string name="settings_privacy_explain">Короткий ответ — почти ничего, и никуда это не уходит. Длинный открывается по кнопке: каждое утверждение там со ссылкой на код, который можно проверить.</string>
+    <string name="settings_privacy_open">Открыть</string>
+
     <string name="settings_version">Залесье %1$s</string>
     <string name="settings_source">Исходный код открыт: github.com/nkVas1/zales</string>
 

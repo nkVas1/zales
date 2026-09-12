@@ -1,0 +1,34 @@
+name: Что-то работает не так
+description: Не про подключение — про само приложение
+labels: ["ошибка"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Что случилось
+      description: Что вы делали, что ожидали увидеть и что увидели вместо этого.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия
+      description: Мелким шрифтом в правом верхнем углу главного экрана.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Телефон и версия Android
+      placeholder: "Samsung Galaxy A12, Android 13"
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Снимок экрана
+      description: Если есть что показать — перетащите картинку сюда.

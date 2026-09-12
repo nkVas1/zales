@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Как поставить приложение
+    url: https://github.com/nkVas1/zales/blob/main/docs/INSTALL.md
+    about: Пошагово, без жаргона — если не получается установить APK.
+  - name: Что делать, если не работает
+    url: https://github.com/nkVas1/zales/blob/main/docs/DIAGNOSTICS.md
+    about: Три шага есть и в самом приложении — Настройки → «Что делать, если не работает».
+  - name: Уязвимость
+    url: https://github.com/nkVas1/zales/security/advisories/new
+    about: Приватно, а не публичным issue. Пожалуйста, не создавайте обычный issue на уязвимость.

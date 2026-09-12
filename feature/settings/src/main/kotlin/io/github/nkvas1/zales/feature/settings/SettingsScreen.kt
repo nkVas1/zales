@@ -43,7 +43,7 @@ public fun SettingsScreen(
     version: String,
     onChange: (Preferences) -> Unit,
     onCheckUpdate: () -> Unit,
-    onOpenDownloads: (String) -> Unit,
+    onBrowse: (String) -> Unit,
     onAlwaysOn: () -> Unit,
     onCheckPath: () -> Unit,
     onLeave: () -> Unit,
@@ -89,7 +89,8 @@ public fun SettingsScreen(
         Stuck(onCheckPath)
         AlwaysOn(onAlwaysOn)
         PathCheck(onCheckPath)
-        Updates(update, onCheckUpdate, onOpenDownloads)
+        Updates(update, onCheckUpdate, onBrowse)
+        Privacy(onBrowse)
 
         Spacer(Modifier.height(12.dp))
         ZalesText(
@@ -185,6 +186,23 @@ private fun Stuck(onCheckPath: () -> Unit) {
     }
 }
 
+/**
+ * A VPN that says it collects nothing has to make that checkable, or it is just
+ * another promise. The page it opens cites the file behind every claim.
+ */
+@Composable
+private fun Privacy(onBrowse: (String) -> Unit) {
+    Section(
+        title = stringResource(R.string.settings_privacy),
+        explanation = stringResource(R.string.settings_privacy_explain),
+    ) {
+        PlateButton(
+            text = stringResource(R.string.settings_privacy_open),
+            onClick = { onBrowse(PRIVACY_URL) },
+        )
+    }
+}
+
 @Composable
 private fun PathCheck(onCheck: () -> Unit) {
     Section(
@@ -230,3 +248,5 @@ private fun Section(title: String, explanation: String, content: @Composable () 
         content()
     }
 }
+
+private const val PRIVACY_URL = "https://github.com/nkVas1/zales/blob/main/docs/PRIVACY.md"

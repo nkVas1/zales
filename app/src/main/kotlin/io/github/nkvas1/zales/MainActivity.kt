@@ -155,7 +155,7 @@ public class MainActivity : ComponentActivity() {
             version = BuildConfig.VERSION_NAME,
             onChange = preferences::apply,
             onCheckUpdate = preferences::checkForUpdate,
-            onOpenDownloads = ::browse,
+            onBrowse = ::browse,
             onAlwaysOn = { open(Settings.ACTION_VPN_SETTINGS) },
             onCheckPath = {
                 check.start()
