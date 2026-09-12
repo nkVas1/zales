@@ -6,6 +6,10 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.2.0] — 2026-09-12
+
 ### Added
 
 - A launcher icon that is the wood itself: three ranks of spruce and a fire's
@@ -33,6 +37,11 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Walking away from the path check while connected left the core stopped under
+  a live interface: every connection blackholed and the screen still said the
+  path was open. The same shape was waiting in recovery, which ran inside the
+  job that polls the traffic counters — a job cancelled for reasons that have
+  nothing to do with recovery.
 - `onResume` had been deleted by accident, so the key list went stale after a
   trip to the system's VPN settings — the exact trip the always-on walkthrough
   sends people on.
@@ -100,5 +109,6 @@ this project uses [Semantic Versioning](https://semver.org/).
 - tun2socks removed from the living documents; it had not been in the build for
   some time ([ADR-0002](docs/adr/0002-tun-via-hev.md) superseded).
 
-[Unreleased]: https://github.com/nkVas1/zales/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nkVas1/zales/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nkVas1/zales/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nkVas1/zales/releases/tag/v0.1.0
