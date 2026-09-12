@@ -8,6 +8,17 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 Nothing yet.
 
+## [0.2.1] — 2026-09-12
+
+### Fixed
+
+- **The app crashed on startup once a key was stored.** A file lock keeps the
+  two processes from writing over each other, but within one process it is not
+  a mutex and not reentrant: ask for a region the same JVM already holds and it
+  throws rather than waits. The home screen and the key screen read the store at
+  the same moment every time they wake up together, and the second read took the
+  whole app down with `OverlappingFileLockException`. Affected 0.1.0 and 0.2.0.
+
 ## [0.2.0] — 2026-09-12
 
 ### Added
@@ -109,6 +120,7 @@ Nothing yet.
 - tun2socks removed from the living documents; it had not been in the build for
   some time ([ADR-0002](docs/adr/0002-tun-via-hev.md) superseded).
 
-[Unreleased]: https://github.com/nkVas1/zales/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/nkVas1/zales/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/nkVas1/zales/releases/tag/v0.2.1
 [0.2.0]: https://github.com/nkVas1/zales/releases/tag/v0.2.0
 [0.1.0]: https://github.com/nkVas1/zales/releases/tag/v0.1.0

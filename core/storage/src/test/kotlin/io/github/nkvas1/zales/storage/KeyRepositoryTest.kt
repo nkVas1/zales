@@ -6,6 +6,10 @@ package io.github.nkvas1.zales.storage
 
 import io.github.nkvas1.zales.model.AccessKey
 import io.github.nkvas1.zales.parsing.ParseFailure
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -132,4 +136,38 @@ class KeyRepositoryTest {
         val error = runCatching { repo.summaries() }.exceptionOrNull()
         assertTrue(error is StorageUnavailableException, "got $error")
     }
+
+    @Test
+    fun `many readers at once do not trip over the file lock`() {
+        // Deliberately not runTest: the crash this guards against needs real
+        // threads. A file lock keeps two processes apart but is not a mutex
+        // within one — ask for a region the same JVM already holds and it
+        // throws rather than waits. The home screen and the key screen ask at
+        // the same moment every time they wake up together, and that took the
+        // whole app down.
+        val repo = KeyRepository(
+            file = File(dir, "keys.bin"),
+            cipher = XorCipher(),
+            clock = { time++ },
+            newId = { "id-${nextId++}" },
+            io = Dispatchers.IO,
+        )
+
+        runBlocking {
+            repo.add(vless)
+            val readers = List(READERS) {
+                async(Dispatchers.IO) {
+                    repeat(ROUNDS) {
+                        repo.summaries()
+                        repo.activeKey()
+                    }
+                    true
+                }
+            }
+            assertTrue(readers.awaitAll().all { it }, "every reader should have finished")
+        }
+    }
 }
+
+private const val READERS = 8
+private const val ROUNDS = 12

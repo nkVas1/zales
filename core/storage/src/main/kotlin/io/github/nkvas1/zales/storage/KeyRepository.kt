@@ -206,7 +206,21 @@ public class KeyRepository(
     }
 
     /** Serialises access across both processes with an advisory OS lock on a side file. */
-    private inline fun <T> locked(write: Boolean, block: () -> T): T {
+    /**
+     * Holds the store still, against this process and against the other one.
+     *
+     * Two layers, because a file lock only ever solved half of it. It keeps the
+     * `:tunnel` process and the interface from writing over each other — but
+     * within one process it is not a mutex and not reentrant: ask for a region
+     * the same JVM already holds and it throws rather than waits. Two coroutines
+     * reading the store at the same moment is not a rare case either, it is what
+     * happens every time the home screen and the key screen wake up together.
+     *
+     * So the monitor comes first and the file lock second. The monitor is on the
+     * companion rather than the instance: both processes build their own
+     * repository, and nothing stops this one from building two.
+     */
+    private fun <T> locked(write: Boolean, block: () -> T): T = synchronized(MONITOR) {
         file.parentFile?.mkdirs()
         RandomAccessFile(File(file.parentFile, "${file.name}.lock"), "rw").use { raf ->
             val channel: FileChannel = raf.channel
@@ -228,6 +242,9 @@ public class KeyRepository(
     private data class State(val keys: List<StoredKey>, val activeId: String?)
 
     private companion object {
+        /** One store file, one monitor. See [locked]. */
+        val MONITOR = Any()
+
         const val FORMAT_VERSION = 1
         val json = Json { ignoreUnknownKeys = true }
     }
